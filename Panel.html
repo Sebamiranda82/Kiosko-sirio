@@ -1,1 +1,262 @@
+¡Excelente trabajo! Con procesar_factura.php arriba, ya tienes el núcleo del servidor listo para procesar el carrito.
+Para cerrar el ciclo y hacer que el sistema deje de ser una simulación estática, el paso final es **actualizar tu archivo Index.html en GitHub** para que el botón de "Estructurar XML" tome los productos seleccionados y los envíe de verdad al backend en PHP que acabas de guardar.
+### Código Actualizado para Index.html
+Edita tu archivo Index.html en GitHub, reemplaza todo su contenido con este código que ya incluye la función fetch() para conectarse con el archivo PHP, y guarda los cambios (*Commit changes*):
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anuar Sistemas - Panel de Facturación V8</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 font-sans text-gray-800 antialiased">
+
+    <header class="bg-blue-700 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <i data-lucide="terminal" class="w-8 h-8 text-blue-200"></i>
+                <span class="text-xl font-bold tracking-wider">ANUAR SISTEMAS</span>
+            </div>
+            <div class="flex items-center space-x-2 bg-blue-800 px-3 py-1.5 rounded text-sm font-medium">
+                <span class="w-2.5 h-2.5 bg-green-400 rounded-full animate-pulse"></span>
+                <span>Entorno: SRI Pruebas (v1.1.0)</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <div class="lg:col-span-1 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <div class="flex items-center space-x-2 mb-4 pb-2 border-b border-gray-100">
+                    <i data-lucide="search" class="text-blue-600 w-5 h-5"></i>
+                    <h2 class="text-lg font-semibold text-gray-700">Buscador de Artículos</h2>
+                </div>
+                
+                <div class="relative mb-4">
+                    <input type="text" id="search-input" oninput="filtrarProductos()" placeholder="Buscar por código o descripción..." 
+                           class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+                    <i data-lucide="search" class="absolute left-3 top-2.5 text-gray-400 w-5 h-5"></i>
+                </div>
+
+                <div class="space-y-2 max-h-[380px] overflow-y-auto pr-1" id="lista-productos">
+                    </div>
+            </div>
+
+            <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between min-h-[500px]">
+                <div>
+                    <div class="flex justify-between items-center mb-6 pb-2 border-b border-gray-100">
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="file-text" class="text-blue-600 w-5 h-5"></i>
+                            <h2 class="text-lg font-semibold text-gray-700">Detalle de Comprobante</h2>
+                        </div>
+                        <span class="text-xs bg-gray-100 text-gray-600 font-mono px-2 py-1 rounded">Secuencial: 000000125</span>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-600 uppercase text-xs tracking-wider border-b border-gray-200">
+                                    <th class="py-3 px-4">Código</th>
+                                    <th class="py-3 px-4">Descripción</th>
+                                    <th class="py-3 px-4 text-center">Cant.</th>
+                                    <th class="py-3 px-4 text-right">P. Unit</th>
+                                    <th class="py-3 px-4 text-right">Total</th>
+                                    <th class="py-3 px-4 text-center">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100" id="tabla-detalles">
+                                </tbody>
+                        </table>
+                    </div>
+                    
+                    <div id="comprobante-vacio" class="text-center py-12 text-gray-400">
+                        <i data-lucide="shopping-bag" class="w-12 h-12 mx-auto mb-2 text-gray-300"></i>
+                        <p>No hay artículos en la factura actual.</p>
+                    </div>
+                </div>
+
+                <div class="mt-8 border-t border-gray-100 pt-4 flex flex-col items-end">
+                    <div class="w-full sm:w-64 space-y-2 text-sm text-gray-600">
+                        <div class="flex justify-between">
+                            <span>Subtotal 0%:</span>
+                            <span class="font-mono" id="subtotal-0">$0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Subtotal 15%:</span>
+                            <span class="font-mono" id="subtotal-15">$0.00</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-200 pb-2">
+                            <span>IVA (15%):</span>
+                            <span class="font-mono text-gray-900" id="valor-iva">$0.00</span>
+                        </div>
+                        <div class="flex justify-between text-base font-bold text-gray-900 pt-1">
+                            <span>Importe Total:</span>
+                            <span class="font-mono text-blue-700" id="importe-total">$0.00</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 flex space-x-3 w-full justify-end">
+                        <button onclick="limpiarFactura()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-sm font-medium flex items-center space-x-2">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            <span>Vaciar</span>
+                        </button>
+                        <button onclick="enviarAlServidor()" class="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-sm shadow-blue-200 transition-all text-sm font-medium flex items-center space-x-2">
+                            <i data-lucide="send" class="w-4 h-4"></i>
+                            <span>Estructurar XML</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Inventario de simulación frontend
+        const inventario = [
+            { codigo: 'PROD-001', descripcion: 'Licencia Software Gestión Anuar V8', precio: 100.00, llevaIva: true },
+            { codigo: 'PROD-002', descripcion: 'Módulo Facturación XML SRI PHP', precio: 75.50, llevaIva: true },
+            { codigo: 'PROD-003', descripcion: 'Soporte Técnico Remoto (Hora)', precio: 25.00, llevaIva: false },
+            { codigo: 'PROD-004', descripcion: 'Módulo de Inventario AppSheet', precio: 120.00, llevaIva: true }
+        ];
+
+        let carrito = [];
+
+        function filtrarProductos() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const lista = document.getElementById('lista-productos');
+            lista.innerHTML = '';
+
+            const filtrados = inventario.filter(p => 
+                p.codigo.toLowerCase().includes(query) || p.descripcion.toLowerCase().includes(query)
+            );
+
+            filtrados.forEach(prod => {
+                lista.innerHTML += `
+                    <div onclick="agregarAlCarrito('${prod.codigo}')" class="p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50/30 transition-all cursor-pointer flex justify-between items-center group">
+                        <div>
+                            <p class="font-medium text-sm text-gray-900">${prod.descripcion}</p>
+                            <p class="text-xs text-gray-500">Cod: ${prod.codigo} ${prod.llevaIva ? '(15% IVA)' : '(0% IVA)'}</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-sm font-bold text-blue-600 block">$${prod.precio.toFixed(2)}</span>
+                            <span class="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded mt-1 inline-block opacity-0 group-hover:opacity-100 transition-opacity">Añadir</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function agregarAlCarrito(codigo) {
+            const itemExistente = carrito.find(item => item.codigo === codigo);
+            if (itemExistente) {
+                itemExistente.cantidad++;
+            } else {
+                const prod = inventario.find(p => p.codigo === codigo);
+                carrito.push({ ...prod, cantidad: 1 });
+            }
+            actualizarInterfaz();
+        }
+
+        function eliminarDelCarrito(codigo) {
+            carrito = carrito.filter(item => item.codigo !== codigo);
+            actualizarInterfaz();
+        }
+
+        function actualizarInterfaz() {
+            const tabla = document.getElementById('tabla-detalles');
+            const placeholderVacio = document.getElementById('comprobante-vacio');
+            tabla.innerHTML = '';
+
+            if (carrito.length === 0) {
+                placeholderVacio.classList.remove('hidden');
+            } else {
+                placeholderVacio.classList.add('hidden');
+            }
+
+            let sub0 = 0;
+            let sub15 = 0;
+
+            carrito.forEach(item => {
+                const totalLinea = item.cantidad * item.precio;
+                if (item.llevaIva) {
+                    sub15 += totalLinea;
+                } else {
+                    sub0 += totalLinea;
+                }
+
+                tabla.innerHTML += `
+                    <tr>
+                        <td class="py-3 px-4 font-mono text-xs text-gray-600">${item.codigo}</td>
+                        <td class="py-3 px-4 text-gray-900 font-medium">${item.descripcion}</td>
+                        <td class="py-3 px-4 text-center font-semibold">${item.cantidad}</td>
+                        <td class="py-3 px-4 text-right">$${item.precio.toFixed(2)}</td>
+                        <td class="py-3 px-4 text-right font-semibold text-gray-900">$${totalLinea.toFixed(2)}</td>
+                        <td class="py-3 px-4 text-center">
+                            <button onclick="eliminarDelCarrito('${item.codigo}')" class="text-red-500 hover:text-red-700">
+                                <i data-lucide="x-circle" class="w-4 h-4 mx-auto"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            const iva = sub15 * 0.15;
+            const totalGeneral = sub0 + sub15 + iva;
+
+            document.getElementById('subtotal-0').innerText = `$${sub0.toFixed(2)}`;
+            document.getElementById('subtotal-15').innerText = `$${sub15.toFixed(2)}`;
+            document.getElementById('valor-iva').innerText = `$${iva.toFixed(2)}`;
+            document.getElementById('importe-total').innerText = `$${totalGeneral.toFixed(2)}`;
+            
+            lucide.createIcons();
+        }
+
+        function limpiarFactura() {
+            carrito = [];
+            actualizarInterfaz();
+        }
+
+        // CONEXIÓN REAL CON EL BACKEND (procesar_factura.php)
+        function enviarAlServidor() {
+            if (carrito.length === 0) {
+                alert("Por favor, añada productos antes de procesar.");
+                return;
+            }
+
+            // Realizar la petición POST con el JSON del carrito
+            fetch('procesar_factura.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ productos: carrito })
+            })
+            .then(response => response.json())
+            .then(res => {
+                if (res.status === 'success') {
+                    alert("Respuesta del Servidor:\n\n" + res.mensaje + "\nTotal validado por PHP: $" + res.totales.importe_total);
+                    console.log("Nodos XML parciales generados por PHP:\n", res.xml_parcial);
+                } else {
+                    alert("Error en el servidor: " + res.mensaje);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("Error al conectar con procesar_factura.php");
+            });
+        }
+
+        filtrarProductos();
+        actualizarInterfaz();
+    </script>
+</body>
+</html>
+
+```
+Cuando tengas ambos actualizados, tu entorno web estará sincronizado. Al presionar el botón azul, la aplicación web enviará una petición en segundo plano al servidor, ejecutando los cálculos en PHP nativo.
 
