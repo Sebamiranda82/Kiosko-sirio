@@ -1,86 +1,150 @@
+
 <?php
-// Configuración de cabeceras para responder en formato JSON
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST");
-header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+header("Access-Control-Allow-Headers: Content-Type");
 
-// 1. Capturar los datos JSON enviados desde el frontend (index.html)
-$datosRecibidos = file_get_contents("php://input");
-$data = json_decode($datosRecibidos, true);
+// 1. Leer datos del carrito enviados desde Panel.html
+$data = json_decode(file_get_contents("php://input"), true);
 
-// Validar que existan datos válidos
 if (!$data || !isset($data['productos'])) {
-    echo json_encode([
-        "status" => "error",
-        "mensaje" => "No se recibieron productos válidos para procesar."
-    ]);
+    echo json_encode(["status" => "error", "mensaje" => "No hay productos recibidos."]);
     exit;
 }
 
+// 2. Datos duros del emisor para la estructura del SRI
+$ruc_emisor   = "1793083115001"; // Cambia por tu RUC real de pruebas/producción
+$ambiente     = "1";             // 1 = Pruebas, 2 = Producción
+$tipoComprob  = "01";            // 01 = Factura
+$establec     = "001";
+$puntoEmision = "001";
+$secuencial   = "000000125";     // Secuencial del documento actual
+$codigoNum    = "12345678";      // Código aleatorio de 8 dígitos para seguridad
+$fechaEmision = date("dmy");     // Formato ddmmaaaa requerido por la clave
+
+// 3. Generar Clave de Acceso (Algoritmo Módulo 11)
+$claveSinDigito = $fechaEmision . $tipoComprob . $ruc_emisor . $ambiente . $establec . $puntoEmision . $secuencial . $codigoNum . "1";
+$digitoVerificador = calcularModulo11($claveSinDigito);
+$claveAcceso = $claveSinDigito . $digitoVerificador;
+
+// 4. Procesar el desglose de productos y sus impuestos
 $productos = $data['productos'];
 $subtotal0 = 0;
-$subtotal15 = 0; // Tarifa vigente de IVA en Ecuador (15%)
+$subtotal15 = 0;
 $detallesXML = "";
 
-// 2. Procesar cada artículo del carrito
 foreach ($productos as $item) {
-    // Sanitizar entradas básicas
     $codigo = htmlspecialchars($item['codigo']);
     $descripcion = htmlspecialchars($item['descripcion']);
     $cantidad = floatval($item['cantidad']);
     $precioUnitario = floatval($item['precio']);
-    
-    // Calcular el total de la línea
     $totalLinea = $cantidad * $precioUnitario;
     
-    // Clasificar según el tipo de impuesto (Simulación de esquema SRI)
     if (isset($item['llevaIva']) && $item['llevaIva'] === true) {
         $subtotal15 += $totalLinea;
-        $codigoPorcentaje = "4"; // Código SRI para IVA 15% (reforma)
+        $codPorcentaje = "4"; // IVA 15%
         $tarifaIva = 15.00;
         $valorIvaLinea = $totalLinea * 0.15;
     } else {
         $subtotal0 += $totalLinea;
-        $codigoPorcentaje = "0"; // Código SRI para IVA 0%
+        $codPorcentaje = "0"; // IVA 0%
         $tarifaIva = 0.00;
         $valorIvaLinea = 0.00;
     }
 
-    // Estructurar el nodo <detalle> en formato XML String para el comprobante
-    $detallesXML .= "    <detalle>\n";
-    $detallesXML .= "        <codigoPrincipal>{$codigo}</codigoPrincipal>\n";
-    $detallesXML .= "        <descripcion>{$descripcion}</descripcion>\n";
-    $detallesXML .= "        <cantidad>" . number_format($cantidad, 2, '.', '') . "</cantidad>\n";
-    $detallesXML .= "        <precioUnitario>" . number_format($precioUnitario, 4, '.', '') . "</precioUnitario>\n";
-    $detallesXML .= "        <descuento>0.00</descuento>\n";
-    $detallesXML .= "        <precioTotalSinImpuesto>" . number_format($totalLinea, 2, '.', '') . "</precioTotalSinImpuesto>\n";
-    $detallesXML .= "        <impuestos>\n";
-    $detallesXML .= "            <impuesto>\n";
-    $detallesXML .= "                <codigo>2</codigo>\n"; // 2 siempre es IVA
-    $detallesXML .= "                <codigoPorcentaje>{$codigoPorcentaje}</codigoPorcentaje>\n";
-    $detallesXML .= "                <tarifa>" . number_format($tarifaIva, 2, '.', '') . "</tarifa>\n";
-    $detallesXML .= "                <baseImponible>" . number_format($totalLinea, 2, '.', '') . "</baseImponible>\n";
-    $detallesXML .= "                <valor>" . number_format($valorIvaLinea, 2, '.', '') . "</valor>\n";
-    $detallesXML .= "            </impuesto>\n";
-    $detallesXML .= "        </impuestos>\n";
-    $detallesXML .= "    </detalle>\n";
+    $detallesXML .= "        <detalle>\n";
+    $detallesXML .= "            <codigoPrincipal>{$codigo}</codigoPrincipal>\n";
+    $detallesXML .= "            <descripcion>{$descripcion}</descripcion>\n";
+    $detallesXML .= "            <cantidad>" . number_format($cantidad, 2, '.', '') . "</cantidad>\n";
+    $detallesXML .= "            <precioUnitario>" . number_format($precioUnitario, 4, '.', '') . "</precioUnitario>\n";
+    $detallesXML .= "            <descuento>0.00</descuento>\n";
+    $detallesXML .= "            <precioTotalSinImpuesto>" . number_format($totalLinea, 2, '.', '') . "</precioTotalSinImpuesto>\n";
+    $detallesXML .= "            <impuestos>\n";
+    $detallesXML .= "                <impuesto>\n";
+    $detallesXML .= "                    <codigo>2</codigo>\n";
+    $detallesXML .= "                    <codigoPorcentaje>{$codPorcentaje}</codigoPorcentaje>\n";
+    $detallesXML .= "                    <tarifa>" . number_format($tarifaIva, 2, '.', '') . "</tarifa>\n";
+    $detallesXML .= "                    <baseImponible>" . number_format($totalLinea, 2, '.', '') . "</baseImponible>\n";
+    $detallesXML .= "                    <valor>" . number_format($valorIvaLinea, 2, '.', '') . "</valor>\n";
+    $detallesXML .= "                </impuesto>\n";
+    $detallesXML .= "            </impuestos>\n";
+    $detallesXML .= "        </detalle>\n";
 }
 
-// 3. Totales Finales del Comprobante
 $totalIva = $subtotal15 * 0.15;
 $importeTotal = $subtotal0 + $subtotal15 + $totalIva;
+$fechaFormatoSRI = date("d/m/Y");
 
-// 4. Retornar respuesta exitosa al frontend con los cálculos del servidor
+// 5. Armar la estructura XML completa (Estándar v1.1.0 Offline)
+$xmlCompleto = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+$xmlCompleto .= "<factura id=\"comprobante\" version=\"1.1.0\">\n";
+$xmlCompleto .= "    <infoTributaria>\n";
+$xmlCompleto .= "        <ambiente>{$ambiente}</ambiente>\n";
+$xmlCompleto .= "        <tipoEmision>1</tipoEmision>\n";
+$xmlCompleto .= "        <razonSocial>ANUAR SISTEMAS</razonSocial>\n";
+$xmlCompleto .= "        <nombreComercial>ANUAR SISTEMAS</nombreComercial>\n";
+$xmlCompleto .= "        <ruc>{$ruc_emisor}</ruc>\n";
+$xmlCompleto .= "        <claveAcceso>{$claveAcceso}</claveAcceso>\n";
+$xmlCompleto .= "        <codDoc>{$tipoComprob}</codDoc>\n";
+$xmlCompleto .= "        <estab>{$establec}</estab>\n";
+$xmlCompleto .= "        <ptoEmi>{$puntoEmision}</ptoEmi>\n";
+$xmlCompleto .= "        <secuencial>{$secuencial}</secuencial>\n";
+$xmlCompleto .= "        <dirMatriz>Av. Principal Ecuador</dirMatriz>\n";
+$xmlCompleto .= "    </infoTributaria>\n";
+$xmlCompleto .= "    <infoFactura>\n";
+$xmlCompleto .= "        <fechaEmision>{$fechaFormatoSRI}</fechaEmision>\n";
+$xmlCompleto .= "        <dirEstablecimiento>Av. Principal Ecuador</dirEstablecimiento>\n";
+$xmlCompleto .= "        <obligadoContabilidad>NO</obligadoContabilidad>\n";
+$xmlCompleto .= "        <tipoIdentificacionComprador>07</tipoIdentificacionComprador>\n"; // Consumidor final
+$xmlCompleto .= "        <razonSocialComprador>CONSUMIDOR FINAL</razonSocialComprador>\n";
+$xmlCompleto .= "        <identificacionComprador>9999999999999</identificacionComprador>\n";
+$xmlCompleto .= "        <totalSinImpuestos>" . number_format(($subtotal0 + $subtotal15), 2, '.', '') . "</totalSinImpuestos>\n";
+$xmlCompleto .= "        <totalDescuento>0.00</totalDescuento>\n";
+$xmlCompleto .= "        <totalConImpuestos>\n";
+if ($subtotal15 > 0) {
+    $xmlCompleto .= "            <totalImpuesto>\n";
+    $xmlCompleto .= "                <codigo>2</codigo>\n";
+    $xmlCompleto .= "                <codigoPorcentaje>4</codigoPorcentaje>\n";
+    $xmlCompleto .= "                <baseImponible>" . number_format($subtotal15, 2, '.', '') . "</baseImponible>\n";
+    $xmlCompleto .= "                <valor>" . number_format($totalIva, 2, '.', '') . "</valor>\n";
+    $xmlCompleto .= "            </totalImpuesto>\n";
+}
+$xmlCompleto .= "        </totalConImpuestos>\n";
+$xmlCompleto .= "        <propina>0.00</propina>\n";
+$xmlCompleto .= "        <importeTotal>" . number_format($importeTotal, 2, '.', '') . "</importeTotal>\n";
+$xmlCompleto .= "        <moneda>DOLAR</moneda>\n";
+$xmlCompleto .= "    </infoFactura>\n";
+$xmlCompleto .= "    <detalles>\n" . $detallesXML . "    </detalles>\n";
+$xmlCompleto .= "</factura>";
+
+// 6. Intentar guardar el archivo XML en el directorio del servidor
+$nombreArchivo = "comprobantes/FACT_" . $claveAcceso . ".xml";
+@file_put_contents($nombreArchivo, $xmlCompleto);
+
+// 7. Enviar respuesta final
 echo json_encode([
     "status" => "success",
-    "mensaje" => "Cálculos del servidor procesados con éxito.",
-    "totales" => [
-        "subtotal_0" => number_format($subtotal0, 2, '.', ''),
-        "subtotal_15" => number_format($subtotal15, 2, '.', ''),
-        "iva_15" => number_format($totalIva, 2, '.', ''),
-        "importe_total" => number_format($importeTotal, 2, '.', '')
-    ],
-    "xml_parcial" => $detallesXML
+    "mensaje" => "XML generado y guardado localmente de forma exitosa.",
+    "claveAcceso" => $claveAcceso,
+    "archivo_guardado" => $nombreArchivo,
+    "xml_generado" => $xmlCompleto
 ]);
 
+// Función matemática auxiliar para el Dígito Verificador Módulo 11 del SRI
+function calcularModulo11($cadena) {
+    $pivote = 2;
+    $suma = 0;
+    for ($i = strlen($cadena) - 1; $i >= 0; $i--) {
+        $suma += intval($cadena[$i]) * $pivote;
+        $pivote++;
+        if ($pivote > 7) {
+            $pivote = 2;
+        }
+    }
+    $resto = $suma % 11;
+    $digito = 11 - $resto;
+    if ($digito == 11) $digito = 0;
+    if ($digito == 10) $digito = 1;
+    return $digito;
+}
