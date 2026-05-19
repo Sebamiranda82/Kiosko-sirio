@@ -7,6 +7,13 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        @media print {
+            body * { visibility: hidden; }
+            #area-impresion-ticket, #area-impresion-ticket * { visibility: visible; }
+            #area-impresion-ticket { position: absolute; left: 0; top: 0; width: 100%; }
+        }
+    </style>
 </head>
 <body class="bg-gray-100 font-sans antialiased text-gray-800">
 
@@ -106,16 +113,20 @@
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-medium text-gray-600">
                     <div>
-                        <label class="block text-gray-400 mb-1 font-mono uppercase text-[10px]">Identificación</label>
-                        <input type="text" id="cliente-id" value="9999999999999" class="w-full p-2.5 border border-gray-300 rounded bg-gray-50 focus:bg-white outline-none">
+                        <label class="block text-gray-400 mb-1 font-mono uppercase text-[10px]">Identificación (RUC / Cédula) + [Enter]</label>
+                        <input type="text" id="cliente-id" value="9999999999999" onkeypress="detectarCliente(event)" class="w-full p-2.5 border border-gray-300 rounded bg-gray-50 focus:bg-white outline-none font-mono">
                     </div>
                     <div>
-                        <label class="block text-gray-400 mb-1 font-mono uppercase text-[10px]">Razón Social</label>
+                        <label class="block text-gray-400 mb-1 font-mono uppercase text-[10px]">Razón Social / Nombre Completo</label>
                         <input type="text" id="cliente-nombre" value="CONSUMIDOR FINAL" class="w-full p-2.5 border border-gray-300 rounded bg-gray-50 focus:bg-white outline-none">
                     </div>
-                    <div class="md:col-span-2">
+                    <div>
                         <label class="block text-gray-400 mb-1 font-mono uppercase text-[10px]">Dirección de Domicilio</label>
                         <input type="text" id="cliente-dir" value="Av. Principal Ecuador" class="w-full p-2.5 border border-gray-300 rounded bg-gray-50 focus:bg-white outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-gray-400 mb-1 font-mono uppercase text-[10px]">Correo Electrónico (Email Envío SRI)</label>
+                        <input type="email" id="cliente-email" value="consumidor@kiosco.com" class="w-full p-2.5 border border-gray-300 rounded bg-gray-50 focus:bg-white outline-none font-mono">
                     </div>
                 </div>
             </div>
@@ -174,10 +185,60 @@
         </div>
     </div>
 
+    <div id="modal-ticket" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white w-full max-w-sm rounded-xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="bg-slate-800 text-white p-4 flex justify-between items-center">
+                <h4 class="text-sm font-bold tracking-wide uppercase font-mono">Vista Previa de Impresión</h4>
+                <button onclick="cerrarModalTicket()" class="text-slate-400 hover:text-white">❌</button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto bg-amber-50/20" id="area-impresion-ticket">
+                <div class="text-center font-mono text-xs space-y-1 border-b border-dashed border-gray-300 pb-3">
+                    <p class="font-bold text-sm">KIOSCO "EL SIRIO"</p>
+                    <p>Anuar Sistemas S.A.</p>
+                    <p id="ticket-fecha"></p>
+                    <p>Guayaquil, Ecuador</p>
+                </div>
+                <div class="font-mono text-[11px] py-3 space-y-1 border-b border-dashed border-gray-300">
+                    <p><strong>Cliente:</strong> <span id="ticket-cli-nombre"></span></p>
+                    <p><strong>RUC/CI:</strong> <span id="ticket-cli-id"></span></p>
+                    <p><strong>Email:</strong> <span id="ticket-cli-email"></span></p>
+                </div>
+                <table class="w-full font-mono text-[11px] my-3">
+                    <thead>
+                        <tr class="border-b border-gray-200 text-left">
+                            <th class="pb-1">Cant.</th>
+                            <th class="pb-1">Detalle</th>
+                            <th class="pb-1 text-right">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ticket-cuerpo-items">
+                        </tbody>
+                </table>
+                <div class="font-mono text-xs text-right space-y-1 border-t border-dashed border-gray-300 pt-3">
+                    <p>Subtotal: <span id="ticket-subtotal"></span></p>
+                    <p>IVA (15%): <span id="ticket-iva"></span></p>
+                    <p class="font-bold text-sm">Total: <span id="ticket-total"></span></p>
+                </div>
+                <div class="text-center font-mono text-[10px] mt-6 text-gray-500">
+                    <p>¡Gracias por su compra!</p>
+                    <p>Comprobante de Control Interno</p>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 p-3 border-t border-gray-200 grid grid-cols-2 gap-2">
+                <button onclick="cerrarModalTicket()" class="bg-gray-300 text-gray-700 py-2 rounded font-bold text-xs uppercase tracking-wider">Cerrar</button>
+                <button onclick="ejecutarImpresionFisica()" class="bg-blue-600 text-white py-2 rounded font-bold text-xs uppercase tracking-wider flex items-center justify-center space-x-1">
+                    <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                    <span>Imprimir</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         lucide.createIcons();
 
-        // Base de datos del Kiosco corregida (Incluye el artículo 1234 solicitado)
         const baseProductos = {
             "1234": { detalle: "Artículo Comercial 1234", precio: 2.50, iva: true },
             "78610001": { detalle: "Coca Cola 500ml", precio: 0.85, iva: true },
@@ -185,9 +246,39 @@
             "G46100902": { detalle: "Módulo Sistema V8 Demo", precio: 5.00, iva: true }
         };
 
+        // Base de datos simulada de clientes registrados
+        const baseClientes = {
+            "9999999999999": { nombre: "CONSUMIDOR FINAL", direccion: "Av. Principal Ecuador", email: "consumidor@kiosco.com" },
+            "0999999999001": { nombre: "ANUAR SISTEMAS", direccion: "Urdesa Central", email: "info@anuarsistemas.com" }
+        };
+
         let carrito = [];
 
-        // Cambiar dinámicamente entre las pestañas
+        // LÓGICA DE DETECCIÓN Y LIMPIEZA DE CAMPOS DE CLIENTE SOLICITADA
+        function detectarCliente(event) {
+            if (event.key === 'Enter') {
+                const idInput = document.getElementById('cliente-id');
+                const rucCedula = idInput.value.trim();
+                
+                const clienteExistente = baseClientes[rucCedula];
+
+                if (clienteExistente) {
+                    // Si existe, carga automáticamente todos los datos
+                    document.getElementById('cliente-nombre').value = clienteExistente.nombre;
+                    document.getElementById('cliente-dir').value = clienteExistente.direccion;
+                    document.getElementById('cliente-email').value = clienteExistente.email;
+                } else {
+                    // SI NO EXISTE: Deja la identificación pero LIMPIA Razón Social, Dirección y Email
+                    document.getElementById('cliente-nombre').value = "";
+                    document.getElementById('cliente-dir').value = "";
+                    document.getElementById('cliente-email').value = "";
+                    
+                    // Foco automático en Razón Social para agilizar la escritura manual del cliente nuevo
+                    document.getElementById('cliente-nombre').focus();
+                }
+            }
+        }
+
         function cambiarPestana(vista) {
             const vcaja = document.getElementById('vista-caja');
             const vcat = document.getElementById('vista-catalogo');
@@ -208,7 +299,6 @@
             }
         }
 
-        // Renderizar la lista de precios real en la pestaña catálogo
         function cargarCatalogoUI() {
             const tbody = document.getElementById('tabla-catalogo-items');
             tbody.innerHTML = "";
@@ -235,7 +325,6 @@
 
         function procesarCodigo(codigo) {
             if (!codigo) return;
-            
             const conocido = baseProductos[codigo];
             const existente = carrito.find(i => i.codigo === codigo);
 
@@ -243,9 +332,8 @@
                 existente.cantidad++;
             } else {
                 if (conocido) {
-                    carrito.push({ codigo, ...conocido, cantidad: 1 });
+                    carrito.push({ codigo, ...conocido, candy: 1, cantidad: 1 });
                 } else {
-                    // Cargar dinámicamente si escanea algo no parametrizado
                     carrito.push({ codigo, detalle: "Artículo Nuevo Kiosco", precio: 1.00, iva: true, cantidad: 1 });
                 }
             }
@@ -259,9 +347,7 @@
 
             if (carrito.length === 0) {
                 vacio.classList.remove('hidden');
-                document.getElementById('txt-subtotal').innerText = "$0.00";
-                document.getElementById('txt-iva').innerText = "$0.00";
-                document.getElementById('txt-total').innerText = "$0.00";
+                actualizarTotalesUI(0, 0);
                 return;
             }
 
@@ -272,9 +358,7 @@
             carrito.forEach(item => {
                 const lineaTotal = item.precio * item.cantidad;
                 subtotal += lineaTotal;
-                if (item.iva) {
-                    totalIva += lineaTotal * 0.15;
-                }
+                if (item.iva) totalIva += lineaTotal * 0.15;
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-gray-50/50">
@@ -287,27 +371,81 @@
                 `;
             });
 
-            const total = subtotal + totalIva;
+            actualizarTotalesUI(subtotal, totalIva);
+        }
 
+        function actualizarTotalesUI(subtotal, iva) {
+            const total = subtotal + iva;
             document.getElementById('txt-subtotal').innerText = `$${subtotal.toFixed(2)}`;
-            document.getElementById('txt-iva').innerText = `$${totalIva.toFixed(2)}`;
+            document.getElementById('txt-iva').innerText = `$${iva.toFixed(2)}`;
             document.getElementById('txt-total').innerText = `$${total.toFixed(2)}`;
+        }
+
+        function guardarLocalmente() {
+            if(carrito.length === 0) return alert("El ticket está vacío.");
+
+            const deseaImprimir = confirm("Venta guardada localmente.\n\n¿Desea imprimir el ticket de venta ahora mismo?");
+            if (deseaImprimir) {
+                abrirVistaPreviaTicket();
+            } else {
+                alert("Venta registrada sin impresión.");
+                limpiarTicket();
+            }
+        }
+
+        function abrirVistaPreviaTicket() {
+            document.getElementById('ticket-cli-nombre').innerText = document.getElementById('cliente-nombre').value;
+            document.getElementById('ticket-cli-id').innerText = document.getElementById('cliente-id').value;
+            document.getElementById('ticket-cli-email').innerText = document.getElementById('cliente-email').value;
+            document.getElementById('ticket-fecha').innerText = new Date().toLocaleString();
+
+            const tbodyTicket = document.getElementById('ticket-cuerpo-items');
+            tbodyTicket.innerHTML = "";
+            
+            let subtotal = 0;
+            let totalIva = 0;
+
+            carrito.forEach(item => {
+                const totalL = item.precio * item.cantidad;
+                subtotal += totalL;
+                if(item.iva) totalIva += totalL * 0.15;
+
+                tbodyTicket.innerHTML += `
+                    <tr>
+                        <td class="py-0.5">${item.cantidad}x</td>
+                        <td class="py-0.5">${item.detalle}</td>
+                        <td class="py-0.5 text-right">$${totalL.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+
+            const total = subtotal + totalIva;
+            document.getElementById('ticket-subtotal').innerText = `$${subtotal.toFixed(2)}`;
+            document.getElementById('ticket-iva').innerText = `$${totalIva.toFixed(2)}`;
+            document.getElementById('ticket-total').innerText = `$${total.toFixed(2)}`;
+
+            document.getElementById('modal-ticket').classList.remove('hidden');
+        }
+
+        function cerrarModalTicket() {
+            document.getElementById('modal-ticket').classList.add('hidden');
+            limpiarTicket();
+        }
+
+        function ejecutarImpresionFisica() {
+            window.print();
+            cerrarModalTicket();
+        }
+
+        function mandarAlSRI() {
+            if(carrito.length === 0) return alert("Agregue artículos para estructurar el XML.");
+            alert("Enviando estructura XML con firma electrónica XAdES-BES para el SRI...");
         }
 
         function limpiarTicket() {
             carrito = [];
             renderizarTicket();
             document.getElementById('codigo-barras').focus();
-        }
-
-        function guardarLocalmente() {
-            if(carrito.length === 0) return alert("Ticket vacío.");
-            alert("Éxito: Transacción del Kiosco respaldada localmente.");
-        }
-
-        function mandarAlSRI() {
-            if(carrito.length === 0) return alert("Agregue artículos para estructurar el XML.");
-            alert("Enviando estructura XML al backend PHP para proceso de firma digital SRI...");
         }
 
         function inicializarEscanerCamara() {
@@ -317,7 +455,6 @@
                 rememberLastUsedCamera: true,
                 supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
             });
-            
             html5QrcodeScanner.render((decodedText) => {
                 procesarCodigo(decodedText);
                 if (navigator.vibrate) navigator.vibrate(100);
