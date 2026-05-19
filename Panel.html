@@ -267,25 +267,36 @@
 
         let carrito = [];
 
-        // VALIDACIÓN DE CLIENTE EXIGIDA
+        // VALIDACIÓN DE CLIENTE MEJORADA Y ESTRICTA
         function detectarCliente(event) {
             if (event.key === 'Enter') {
                 const idInput = document.getElementById('cliente-id');
                 const rucCedula = idInput.value.trim();
                 const clienteExistente = baseClientes[rucCedula];
 
+                // Referencias directas al DOM para evitar errores de asignación vacía
+                const inputNombre = document.getElementById('cliente-nombre');
+                const inputDir = document.getElementById('cliente-dir');
+                const inputEmail = document.getElementById('cliente-email');
+
                 if (clienteExistente) {
-                    // Si existe, carga sus datos correspondientes
-                    document.getElementById('cliente-nombre').value = clienteExistente.nombre;
-                    document.getElementById('cliente-dir').value = clienteExistente.direccion;
-                    document.getElementById('cliente-email').value = clienteExistente.email;
+                    // Si existe el registro, inyecta los datos correspondientes
+                    inputNombre.value = clienteExistente.nombre;
+                    inputDir.value = clienteExistente.direccion;
+                    inputEmail.value = clienteExistente.email;
                 } else {
-                    // SI NO EXISTE: Vacía estrictamente Razón Social, Dirección y Email
-                    document.getElementById('cliente-nombre').value = "";
-                    document.getElementById('cliente-dir').value = "";
-                    document.getElementById('cliente-email').value = "";
-                    // Pone el foco directamente en Razón Social para agilizar la escritura manual
-                    document.getElementById('cliente-nombre').focus();
+                    // SI NO EXISTE: Vaciado absoluto y contundente de las propiedades de valor
+                    inputNombre.value = "";
+                    inputDir.value = "";
+                    inputEmail.value = "";
+
+                    // Limpieza adicional de atributos de valor en el HTML para evitar persistencia visual
+                    inputNombre.setAttribute('value', '');
+                    inputDir.setAttribute('value', '');
+                    inputEmail.setAttribute('value', '');
+
+                    // Mueve el enfoque automáticamente para permitir la rápida inserción de datos del nuevo cliente
+                    inputNombre.focus();
                 }
             }
         }
@@ -344,7 +355,7 @@
                 existente.cantidad++;
             } else {
                 if (conocido) {
-                    carrito.push({ codigo, ...conocido, Math: 1, cantidad: 1 });
+                    carrito.push({ codigo, ...conocido, cantidad: 1 });
                 } else {
                     carrito.push({ codigo, detalle: "Artículo Nuevo Registrado", precio: 1.00, iva: true, cantidad: 1 });
                 }
@@ -439,6 +450,7 @@
             document.getElementById('modal-ticket').classList.remove('hidden');
         }
 
+        // Cierre de modal y restablecimiento
         function cerrarModalTicket() {
             document.getElementById('modal-ticket').classList.add('hidden');
             limpiarTicket();
