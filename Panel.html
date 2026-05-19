@@ -27,21 +27,20 @@
 
     <nav class="max-w-7xl mx-auto px-4 mt-4">
         <div class="flex space-x-1 border-b border-gray-200">
-            <button class="bg-white border-t border-x border-gray-200 text-blue-600 px-4 py-2 rounded-t-lg font-medium text-xs flex items-center space-x-1.5 shadow-sm">
+            <button id="btn-pestana-caja" onclick="cambiarPestana('caja')" class="bg-white border-t border-x border-gray-200 text-blue-600 px-4 py-2 rounded-t-lg font-medium text-xs flex items-center space-x-1.5 shadow-sm transition-all">
                 <i data-lucide="calculator" class="w-3.5 h-3.5"></i>
                 <span>Caja de Ventas</span>
             </button>
-            <button class="text-gray-500 hover:text-gray-700 px-4 py-2 font-medium text-xs flex items-center space-x-1.5">
+            <button id="btn-pestana-cat" onclick="cambiarPestana('catalogo')" class="text-gray-500 hover:text-gray-700 px-4 py-2 font-medium text-xs flex items-center space-x-1.5 transition-all">
                 <i data-lucide="layers" class="w-3.5 h-3.5"></i>
                 <span>Catálogo de Precios</span>
             </button>
         </div>
     </nav>
 
-    <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+    <div id="vista-caja" class="max-w-7xl mx-auto px-4 py-6 space-y-6">
         
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            
             <div class="lg:col-span-5 bg-white p-5 rounded-xl shadow-sm border border-gray-200 flex flex-col justify-between">
                 <div>
                     <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center space-x-1">
@@ -49,14 +48,14 @@
                         <span>Lector de Código de Barras</span>
                     </h3>
                     
-                    <input type="text" id="codigo-barras" onkeypress="detectarTeclado(event)" autofocus placeholder="Listo para escanear..." 
+                    <input type="text" id="codigo-barras" onkeypress="detectarTeclado(event)" autofocus placeholder="Digite código (Ej: 1234) o escanee..." 
                            class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-base focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all font-mono mb-4 text-center">
                     
                     <div class="border border-dashed border-gray-300 rounded-lg bg-gray-50 overflow-hidden relative">
                         <div id="reader" class="w-full"></div>
                         <div id="status-camara" class="text-center py-4 text-xs text-gray-400 font-mono">
                             <i data-lucide="camera" class="w-5 h-5 mx-auto mb-1 text-gray-300"></i>
-                            Cámara activa automáticamente en HTTPS
+                            Cámara lista para lectura HTTPS
                         </div>
                     </div>
                 </div>
@@ -100,25 +99,23 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            
             <div class="lg:col-span-7 bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                 <h3 class="font-bold text-xs text-gray-400 uppercase tracking-wider mb-4 flex items-center space-x-1 pb-1.5 border-b border-gray-100">
                     <i data-lucide="user-cog" class="text-blue-500 w-4 h-4"></i>
                     <span>Información del Cliente / Consumidor</span>
                 </h3>
-                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-medium text-gray-600">
                     <div>
-                        <label class="block text-gray-400 mb-1 font-mono uppercase text-[10px]">Identificación (RUC / Cédula)</label>
-                        <input type="text" id="cliente-id" value="9999999999999" class="w-full p-2.5 border border-gray-300 rounded bg-gray-50 focus:bg-white focus:ring-1 focus:ring-blue-500 outline-none">
+                        <label class="block text-gray-400 mb-1 font-mono uppercase text-[10px]">Identificación</label>
+                        <input type="text" id="cliente-id" value="9999999999999" class="w-full p-2.5 border border-gray-300 rounded bg-gray-50 focus:bg-white outline-none">
                     </div>
                     <div>
-                        <label class="block text-gray-400 mb-1 font-mono uppercase text-[10px]">Razón Social / Nombre Completo</label>
-                        <input type="text" id="cliente-nombre" value="CONSUMIDOR FINAL" class="w-full p-2.5 border border-gray-300 rounded bg-gray-50 focus:bg-white focus:ring-1 focus:ring-blue-500 outline-none">
+                        <label class="block text-gray-400 mb-1 font-mono uppercase text-[10px]">Razón Social</label>
+                        <input type="text" id="cliente-nombre" value="CONSUMIDOR FINAL" class="w-full p-2.5 border border-gray-300 rounded bg-gray-50 focus:bg-white outline-none">
                     </div>
                     <div class="md:col-span-2">
                         <label class="block text-gray-400 mb-1 font-mono uppercase text-[10px]">Dirección de Domicilio</label>
-                        <input type="text" id="cliente-dir" value="Av. Principal Ecuador" class="w-full p-2.5 border border-gray-300 rounded bg-gray-50 focus:bg-white focus:ring-1 focus:ring-blue-500 outline-none">
+                        <input type="text" id="cliente-dir" value="Av. Principal Ecuador" class="w-full p-2.5 border border-gray-300 rounded bg-gray-50 focus:bg-white outline-none">
                     </div>
                 </div>
             </div>
@@ -138,33 +135,95 @@
                         <span id="txt-total" class="text-yellow-400 text-xl font-black">$0.00</span>
                     </div>
                 </div>
-
                 <div class="grid grid-cols-2 gap-3 text-xs font-bold tracking-wider uppercase">
-                    <button onclick="guardarLocalmente()" class="bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg shadow transition-all flex items-center justify-center space-x-2">
+                    <button onclick="guardarLocalmente()" class="bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg shadow flex items-center justify-center space-x-2">
                         <i data-lucide="save" class="w-4 h-4"></i>
                         <span>GUARDAR</span>
                     </button>
-                    <button onclick="mandarAlSRI()" class="bg-amber-600 hover:bg-amber-700 text-white py-3 px-4 rounded-lg shadow transition-all flex items-center justify-center space-x-2">
+                    <button onclick="mandarAlSRI()" class="bg-amber-600 hover:bg-amber-700 text-white py-3 px-4 rounded-lg shadow flex items-center justify-center space-x-2">
                         <i data-lucide="send" class="w-4 h-4"></i>
                         <span>MANDAR AL SRI</span>
                     </button>
                 </div>
             </div>
-
         </div>
+    </div>
 
-    </main>
+    <div id="vista-catalogo" class="max-w-7xl mx-auto px-4 py-6 hidden">
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-100">
+                <h3 class="font-bold text-sm text-gray-700 uppercase tracking-wide flex items-center space-x-2">
+                    <i data-lucide="layers" class="text-blue-500 w-4 h-4"></i>
+                    <span>Catálogo General de Artículos</span>
+                </h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr class="bg-gray-50 text-gray-500 uppercase border-b border-gray-200 font-mono">
+                            <th class="py-2.5 px-4">Código de Barras</th>
+                            <th class="py-2.5 px-4">Descripción del Artículo</th>
+                            <th class="py-2.5 px-4 text-right">Precio Base</th>
+                            <th class="py-2.5 px-4 text-center">Aplica IVA (15%)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-catalogo-items" class="divide-y divide-gray-100 font-medium">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
     <script>
         lucide.createIcons();
 
+        // Base de datos del Kiosco corregida (Incluye el artículo 1234 solicitado)
         const baseProductos = {
+            "1234": { detalle: "Artículo Comercial 1234", precio: 2.50, iva: true },
             "78610001": { detalle: "Coca Cola 500ml", precio: 0.85, iva: true },
             "78610002": { detalle: "Funda de Papas Fritas", precio: 1.25, iva: false },
-            "G46100902": { detalle: "Artículo Demo Sistema V8", precio: 5.00, iva: true }
+            "G46100902": { detalle: "Módulo Sistema V8 Demo", precio: 5.00, iva: true }
         };
 
         let carrito = [];
+
+        // Cambiar dinámicamente entre las pestañas
+        function cambiarPestana(vista) {
+            const vcaja = document.getElementById('vista-caja');
+            const vcat = document.getElementById('vista-catalogo');
+            const pcaja = document.getElementById('btn-pestana-caja');
+            const pcat = document.getElementById('btn-pestana-cat');
+
+            if (vista === 'caja') {
+                vcaja.classList.remove('hidden');
+                vcat.classList.add('hidden');
+                pcaja.className = "bg-white border-t border-x border-gray-200 text-blue-600 px-4 py-2 rounded-t-lg font-medium text-xs flex items-center space-x-1.5 shadow-sm";
+                pcat.className = "text-gray-500 hover:text-gray-700 px-4 py-2 font-medium text-xs flex items-center space-x-1.5";
+            } else {
+                vcaja.classList.add('hidden');
+                vcat.classList.remove('hidden');
+                pcat.className = "bg-white border-t border-x border-gray-200 text-blue-600 px-4 py-2 rounded-t-lg font-medium text-xs flex items-center space-x-1.5 shadow-sm";
+                pcaja.className = "text-gray-500 hover:text-gray-700 px-4 py-2 font-medium text-xs flex items-center space-x-1.5";
+                cargarCatalogoUI();
+            }
+        }
+
+        // Renderizar la lista de precios real en la pestaña catálogo
+        function cargarCatalogoUI() {
+            const tbody = document.getElementById('tabla-catalogo-items');
+            tbody.innerHTML = "";
+            Object.keys(baseProductos).forEach(codigo => {
+                const p = baseProductos[codigo];
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="py-3 px-4 font-mono text-gray-600 font-bold">${codigo}</td>
+                        <td class="py-3 px-4 text-gray-900">${p.detalle}</td>
+                        <td class="py-3 px-4 text-right text-gray-900 font-semibold">$${p.precio.toFixed(2)}</td>
+                        <td class="py-3 px-4 text-center">${p.iva ? '✅ SÍ' : '❌ NO'}</td>
+                    </tr>
+                `;
+            });
+        }
 
         function detectarTeclado(event) {
             if (event.key === 'Enter') {
@@ -186,7 +245,8 @@
                 if (conocido) {
                     carrito.push({ codigo, ...conocido, cantidad: 1 });
                 } else {
-                    carrito.push({ codigo, detalle: "Producto Nuevo Detectado", precio: 1.00, iva: true, cantidad: 1 });
+                    // Cargar dinámicamente si escanea algo no parametrizado
+                    carrito.push({ codigo, detalle: "Artículo Nuevo Kiosco", precio: 1.00, iva: true, cantidad: 1 });
                 }
             }
             renderizarTicket();
@@ -240,15 +300,14 @@
             document.getElementById('codigo-barras').focus();
         }
 
-        // Acciones de Botonera
         function guardarLocalmente() {
             if(carrito.length === 0) return alert("Ticket vacío.");
-            alert("Venta guardada localmente en la base del Kiosco.");
+            alert("Éxito: Transacción del Kiosco respaldada localmente.");
         }
 
         function mandarAlSRI() {
-            if(carrito.length === 0) return alert("No hay datos para procesar el XML.");
-            alert("Estructurando XML con firma electrónica XAdES-BES para el SRI...");
+            if(carrito.length === 0) return alert("Agregue artículos para estructurar el XML.");
+            alert("Enviando estructura XML al backend PHP para proceso de firma digital SRI...");
         }
 
         function inicializarEscanerCamara() {
@@ -269,7 +328,6 @@
             setTimeout(() => {
                 if (document.getElementById('reader')) {
                     inicializarEscanerCamara();
-                    document.getElementById('status-camara').innerHTML = "🟢 Escáner por cámara operativo";
                 }
             }, 800);
         });
