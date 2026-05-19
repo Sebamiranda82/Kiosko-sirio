@@ -278,10 +278,12 @@
             }, 800);
         });
 
-        // FUNCIÓN CORREGIDA AL 100% - COMPORTAMIENTO ESTRICTO
+        // FUNCIÓN CORREGIDA DE FORMA ABSOLUTA Y CONTUNDENTE
         function detectarCliente(event) {
             if (event.key === 'Enter') {
-                event.preventDefault(); // Previene cualquier recarga accidental del formulario
+                // DETENCION RADICAL: Evita que el navegador procese el formulario o haga re-render
+                event.preventDefault();
+                event.stopPropagation();
                 
                 const idInput = document.getElementById('cliente-id');
                 const rucCedula = idInput.value.trim();
@@ -292,22 +294,22 @@
                 const inputEmail = document.getElementById('cliente-email');
 
                 if (clienteExistente) {
-                    // Si existe, asigna los valores correspondientes
+                    // Si el cliente existe, inyectamos sus datos con normalidad
                     inputNombre.value = clienteExistente.nombre;
                     inputDir.value = clienteExistente.direccion;
                     inputEmail.value = clienteExistente.email;
                 } else {
-                    // SI NO EXISTE: Limpieza absoluta, forzada y garantizada
+                    // SI NO EXISTE: Vaciado absoluto forzando el estado del DOM
                     inputNombre.value = "";
                     inputDir.value = "";
                     inputEmail.value = "";
 
-                    // Forzado del DOM borrando cualquier rastro de valor previo
-                    inputNombre.value = String("");
-                    inputDir.value = String("");
-                    inputEmail.value = String("");
+                    // DESTRUCCIÓN DE ATRIBUTOS CACHÉ: Elimina cualquier valor persistente del HTML
+                    inputNombre.removeAttribute('value');
+                    inputDir.removeAttribute('value');
+                    inputEmail.removeAttribute('value');
 
-                    // Cambia el foco directamente al nombre para escribir el nuevo cliente
+                    // Mover enfoque de escritura de inmediato
                     inputNombre.focus();
                 }
             }
