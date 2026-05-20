@@ -3,82 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kiosco El Sirio - Control de Limpieza v9.5</title>
+    <title>Centro Ferretero Bacilio - Sistema Integral v10.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        @media print {
+            body * { visibility: hidden; }
+            #area-impresion-ticket, #area-impresion-ticket * { visibility: visible; }
+            #area-impresion-ticket { position: absolute; left: 0; top: 0; width: 100%; }
+        }
+    </style>
 </head>
 <body class="bg-[#f8fafc] font-sans antialiased text-slate-800">
 
-    <header class="bg-gradient-to-r from-blue-900 to-slate-900 text-white shadow-md">
+    <div id="barra-notificacion-cambios" class="bg-amber-500 text-slate-950 px-6 py-2.5 text-xs font-bold border-b border-amber-600 shadow-sm flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+            <i data-lucide="info" class="w-4 h-4 text-slate-900 shrink-0"></i>
+            <span>🛠️ CAMBIOS EN ESTA VERSIÓN: Se corrigieron las 3 pestañas originales del menú superior, se eliminaron los alerts al agregar productos y se blindó la limpieza estricta de campos al ingresar cédulas no existentes.</span>
+        </div>
+        <button onclick="document.getElementById('barra-notificacion-cambios').remove()" class="bg-amber-600/30 hover:bg-amber-600/50 text-slate-900 px-2 py-1 rounded font-mono text-[10px] transition-colors ml-4">
+            [Cerrar Aviso]
+        </button>
+    </div>
+
+    <header class="bg-gradient-to-r from-blue-900 to-slate-900 text-white shadow-md border-b border-blue-800/40">
         <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
             <div class="flex items-center space-x-3">
+                <div class="bg-white/10 p-2.5 rounded-xl border border-white/10">
+                    <i data-lucide="wrench" class="w-6 h-6 text-blue-400"></i>
+                </div>
                 <div>
-                    <h1 class="text-xl font-black tracking-tight">🏪 Kiosco "El Sirio"</h1>
-                    <p class="text-[10px] text-slate-400 font-mono tracking-wider">Control de Limpieza de Formulario • Anuar Sistemas</p>
+                    <h1 class="text-xl font-black tracking-tight">Centro Ferretero Bacilio</h1>
+                    <p class="text-[10px] text-slate-400 font-mono tracking-wider">Sistema de Gestión ERP • Anuar Sistemas</p>
                 </div>
             </div>
             <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-bold font-mono">
-                ● SRI CONECTADO
+                ● SRI EN LÍNEA (PROD)
             </span>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-6 py-6 space-y-6">
-        
-        <div class="grid grid-cols-2 gap-4 max-w-2xl">
-            <button id="btn-caja" onclick="cambiarPestaña('caja')" class="bg-slate-800 text-white py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 shadow-sm border border-slate-700 transition-all">
-                <i data-lucide="shopping-cart" class="w-4 h-4"></i>
-                <span>🛒 Caja de Ventas</span>
+    <nav class="max-w-7xl mx-auto px-6 mt-6">
+        <div class="flex p-1 bg-slate-200/80 rounded-xl space-x-1 max-w-2xl">
+            <button id="tab-caja" onclick="cambiarPestana('caja')" class="flex-1 bg-slate-900 text-white py-2.5 rounded-lg font-bold text-xs flex items-center justify-center space-x-2 shadow-sm transition-all">
+                <i data-lucide="calculator" class="w-4 h-4"></i>
+                <span>Caja de Ventas</span>
             </button>
-            <button id="btn-catalogo" onclick="cambiarPestaña('catalogo')" class="bg-slate-200 text-slate-700 hover:bg-slate-300 py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 transition-all">
+            <button id="tab-catalogo" onclick="cambiarPestana('catalogo')" class="flex-1 text-slate-600 hover:text-slate-900 py-2.5 rounded-lg font-semibold text-xs flex items-center justify-center space-x-2 transition-all">
+                <i data-lucide="layers" class="w-4 h-4"></i>
+                <span>Catálogo de Precios</span>
+            </button>
+            <button id="tab-db" onclick="cambiarPestana('db')" class="flex-1 text-slate-600 hover:text-slate-900 py-2.5 rounded-lg font-semibold text-xs flex items-center justify-center space-x-2 transition-all">
                 <i data-lucide="database" class="w-4 h-4"></i>
-                <span>⚙️ Catálogo y Precios Masivos</span>
+                <span>Carga Masiva (DB)</span>
             </button>
         </div>
+    </nav>
 
-        <div id="vista-caja" class="space-y-6">
+    <main class="max-w-7xl mx-auto px-6 py-6">
+
+        <div id="view-caja" class="space-y-6">
+            
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <div class="lg:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <div class="flex items-center space-x-2 mb-4">
-                        <i data-lucide="scan-barcode" class="w-4 h-4 text-blue-600"></i>
-                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">MÉTODO MANUAL O LECTOR USB</h3>
-                    </div>
-                    <input type="text" id="codigo-barras" onkeypress="detectarTeclado(event)" autofocus placeholder="Escanee o digite código..." 
-                           class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none text-center font-mono">
-                    
-                    <div class="mt-4 border border-dashed border-slate-200 rounded-xl bg-slate-50 p-4 text-center">
-                        <button class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center space-x-2 mx-auto transition-colors">
-                            <i data-lucide="camera" class="w-4 h-4"></i>
-                            <span>▶ Activar Cámara</span>
-                        </button>
+                <div class="lg:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center space-x-2 mb-4">
+                            <i data-lucide="scan-barcode" class="w-4 h-4 text-blue-600"></i>
+                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Ingreso de Artículos</h3>
+                        </div>
+                        <input type="text" id="codigo-barras" onkeypress="detectarTeclado(event)" autofocus placeholder="Escanee código o digite (Ej: 1234 y Enter)..." 
+                               class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none text-center font-mono shadow-inner">
+                        
+                        <div class="border border-dashed border-slate-300 rounded-xl bg-slate-50 p-4 text-center text-xs text-slate-400 mt-4">
+                            <div id="reader" class="w-full mb-2"></div>
+                            <i data-lucide="camera" class="w-5 h-5 mx-auto mb-1 text-slate-300"></i>
+                            Lector de Cámara integrado disponible
+                        </div>
                     </div>
                 </div>
 
-                <div class="lg:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 min-h-[250px] flex flex-col justify-between">
+                <div class="lg:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 min-h-[280px] flex flex-col justify-between">
                     <div>
                         <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
                             <h3 class="font-bold text-xs text-slate-500 uppercase tracking-wider">Detalle del Comprobante</h3>
                             <button onclick="limpiarTicket()" class="text-[11px] bg-slate-100 hover:bg-red-50 hover:text-red-600 px-2.5 py-1.5 rounded-lg font-medium transition-colors">
-                                Limpiar Detalle
+                                Limpiar Todo
                             </button>
                         </div>
-                        <div class="overflow-x-auto">
+                        <div class="overflow-x-auto max-h-[180px] overflow-y-auto">
                             <table class="w-full text-left text-xs">
                                 <thead>
                                     <tr class="bg-slate-50 text-slate-400 uppercase border-b border-slate-200 font-mono text-[10px]">
+                                        <th class="py-2 px-3">Código</th>
                                         <th class="py-2 px-3">Descripción</th>
-                                        <th class="py-2 px-3">Categoría</th>
-                                        <th class="py-2 px-3 text-center">Cant.</th>
-                                        <th class="py-2 px-3 text-right">P. Unit.</th>
-                                        <th class="py-2 px-3 text-right">Subtotal</th>
+                                        <th class="py-2 px-3 text-center">Cant</th>
+                                        <th class="py-2 px-3 text-right">P. Unit</th>
+                                        <th class="py-2 px-3 text-right">Total</th>
                                     </tr>
                                 </thead>
-                                <tbody id="tabla-items" class="divide-y divide-slate-100 font-medium"></tbody>
+                                <tbody id="tabla-items" class="divide-y divide-slate-100 font-medium">
+                                    </tbody>
                             </table>
                         </div>
                         <div id="ticket-vacio" class="py-12 text-center text-slate-400 text-xs">
-                            El ticket está vacío.
+                            No hay artículos cargados en la proforma actual.
                         </div>
                     </div>
                 </div>
@@ -88,23 +117,23 @@
                 <div class="lg:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                     <div class="flex items-center space-x-2 mb-4 pb-2 border-b border-slate-100">
                         <i data-lucide="user" class="text-blue-600 w-4 h-4"></i>
-                        <h3 class="font-bold text-xs text-slate-400 uppercase tracking-wider">📋 DATOS DEL CLIENTE</h3>
+                        <h3 class="font-bold text-xs text-slate-400 uppercase tracking-wider">Datos de Facturación del Cliente</h3>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-medium">
                         <div>
-                            <label class="block text-slate-400 mb-1 font-mono text-[10px]">RUC / Cédula / DNI + [ENTER]</label>
-                            <input type="text" id="cliente-id" onkeydown="detectarCliente(event)" placeholder="Ingrese identificación..." class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-mono font-bold transition-all">
+                            <label class="block text-slate-400 mb-1 font-mono uppercase text-[10px]">RUC / Cédula / DNI + [Enter]</label>
+                            <input type="text" id="cliente-id" onkeydown="detectarCliente(event)" placeholder="Ingrese CI/RUC y presione Enter" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-mono font-bold transition-all">
                         </div>
                         <div>
-                            <label class="block text-slate-400 mb-1 font-mono text-[10px]">Nombre / Razón Social</label>
+                            <label class="block text-slate-400 mb-1 font-mono uppercase text-[10px]">Nombre / Razón Social</label>
                             <input type="text" id="cliente-nombre" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
                         </div>
                         <div>
-                            <label class="block text-slate-400 mb-1 font-mono text-[10px]">Dirección</label>
+                            <label class="block text-slate-400 mb-1 font-mono uppercase text-[10px]">Dirección</label>
                             <input type="text" id="cliente-dir" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
                         </div>
                         <div>
-                            <label class="block text-slate-400 mb-1 font-mono text-[10px]">Correo Electrónico</label>
+                            <label class="block text-slate-400 mb-1 font-mono uppercase text-[10px]">Correo Electrónico</label>
                             <input type="email" id="cliente-email" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-mono transition-all">
                         </div>
                     </div>
@@ -121,26 +150,48 @@
                             <span id="txt-iva" class="font-bold text-white text-sm">$0.00</span>
                         </div>
                         <div class="flex justify-between items-center pt-2 border-t border-slate-800">
-                            <span class="text-emerald-400 font-bold">TOTAL A LIQUIDAR:</span>
-                            <span id="txt-total" class="text-emerald-400 text-3xl font-black">$0.00</span>
+                            <span class="text-emerald-400 font-bold">TOTAL A RECAUDAR:</span>
+                            <span id="txt-total" class="text-emerald-400 text-2xl font-black">$0.00</span>
                         </div>
                     </div>
-                    <button onclick="alert('Venta procesada localmente.')" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3.5 px-4 rounded-xl transition-all text-sm tracking-wide uppercase shadow-sm">
-                        REGISTRAR VENTA (F12)
+                    <button onclick="alert('Comprobante guardado de forma interna')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl transition-colors text-center text-xs uppercase tracking-wide">
+                        REGISTRAR COMPROBANTE (F12)
                     </button>
                 </div>
             </div>
+
         </div>
 
-        <div id="vista-catalogo" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-            <div class="flex items-center space-x-2 border-b border-slate-100 pb-3">
-                <i data-lucide="database" class="text-blue-600 w-5 h-5"></i>
-                <h3 class="font-bold text-sm text-slate-700">Administración del Catálogo de Artículos</h3>
+        <div id="view-catalogo" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+            <div class="flex items-center space-x-2 pb-3 border-b border-slate-100">
+                <i data-lucide="layers" class="text-blue-600 w-5 h-5"></i>
+                <h3 class="font-bold text-sm text-slate-700">Catálogo Operativo de Artículos</h3>
             </div>
-            <p class="text-xs text-slate-500">Aquí se cargan y sincronizan los archivos masivos de Excel/CSV para la base de datos local de productos.</p>
-            <div class="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center bg-slate-50">
-                <i data-lucide="file-spreadsheet" class="w-8 h-8 text-slate-400 mx-auto mb-2"></i>
-                <p class="text-xs font-semibold text-slate-600">Arrastre su archivo de precios aquí o haga clic para buscar</p>
+            <div class="overflow-x-auto rounded-xl border border-slate-100">
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-500 uppercase border-b border-slate-200 font-mono text-[10px]">
+                            <th class="py-3 px-4">Código</th>
+                            <th class="py-3 px-4">Descripción del Artículo</th>
+                            <th class="py-3 px-4 text-right">Precio Base</th>
+                            <th class="py-3 px-4 text-center">Impuesto (IVA)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-catalogo-items" class="divide-y divide-slate-100 font-medium text-slate-700">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="view-db" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+            <div class="flex items-center space-x-2 pb-3 border-b border-slate-100">
+                <i data-lucide="database" class="text-blue-600 w-5 h-5"></i>
+                <h3 class="font-bold text-sm text-slate-700">Sincronización de Datos (Anuar Sistemas)</h3>
+            </div>
+            <p class="text-xs text-slate-500">Módulo de sincronización masiva para archivos en formato de texto delimitado por comas (CSV) o planillas de Excel.</p>
+            <div class="border-2 border-dashed border-slate-300 rounded-xl p-10 text-center bg-slate-50 hover:bg-slate-100/50 transition-colors cursor-pointer">
+                <i data-lucide="file-spreadsheet" class="w-10 h-10 text-slate-400 mx-auto mb-2"></i>
+                <p class="text-xs font-bold text-slate-600">Suelte el archivo estructurado para actualizar la base de datos local</p>
             </div>
         </div>
 
@@ -149,61 +200,72 @@
     <script>
         lucide.createIcons();
 
-        // Base de Datos Estricta de Clientes
+        // Base interna estricta de datos
         const baseClientes = {
             "9999999999999": { nombre: "CONSUMIDOR FINAL", direccion: "Av. Principal Ecuador", email: "consumidor@kiosco.com" },
             "0999999999001": { nombre: "ANUAR SISTEMAS", direccion: "Urdesa Central", email: "info@anuarsistemas.com" }
         };
 
+        const baseProductos = {
+            "1234": { detalle: "Perno Hexagonal de Acero 1/2", precio: 0.45, iva: true },
+            "78610001": { detalle: "Disco de Corte Amoladora Bosch", precio: 2.25, iva: true },
+            "5566": { detalle: "Martillo de Uña de Goma", precio: 8.50, iva: false }
+        };
+
         let carrito = [];
 
-        // Cambiar entre pestañas de manera estable
-        function cambiarPestaña(tipo) {
-            const vcaja = document.getElementById('vista-caja');
-            const vcat = document.getElementById('vista-catalogo');
-            const bcaja = document.getElementById('btn-caja');
-            const bcat = document.getElementById('btn-catalogo');
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('cliente-id').value = "9999999999999";
+            document.getElementById('cliente-nombre').value = "CONSUMIDOR FINAL";
+            document.getElementById('cliente-dir').value = "Av. Principal Ecuador";
+            document.getElementById('cliente-email').value = "consumidor@kiosco.com";
+            cargarCatalogoUI();
+        });
 
-            if (tipo === 'caja') {
-                vcaja.classList.remove('hidden');
-                vcat.classList.add('hidden');
-                bcaja.className = "bg-slate-800 text-white py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 shadow-sm border border-slate-700 transition-all";
-                bcat.className = "bg-slate-200 text-slate-700 hover:bg-slate-300 py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 transition-all";
-            } else {
-                vcaja.classList.add('hidden');
-                vcat.classList.remove('hidden');
-                bcaja.className = "bg-slate-200 text-slate-700 hover:bg-slate-300 py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 transition-all";
-                bcat.className = "bg-slate-800 text-white py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 shadow-sm border border-slate-700 transition-all";
-            }
+        function cambiarPestana(idVista) {
+            const views = {
+                'caja': document.getElementById('view-caja'),
+                'catalogo': document.getElementById('view-catalogo'),
+                'db': document.getElementById('view-db')
+            };
+            const tabs = {
+                'caja': document.getElementById('tab-caja'),
+                'catalogo': document.getElementById('tab-catalogo'),
+                'db': document.getElementById('tab-db')
+            };
+
+            Object.keys(views).forEach(key => {
+                if (key === idVista) {
+                    views[key].classList.remove('hidden');
+                    tabs[key].className = "flex-1 bg-slate-900 text-white py-2.5 rounded-lg font-bold text-xs flex items-center justify-center space-x-2 shadow-sm transition-all";
+                } else {
+                    views[key].classList.add('hidden');
+                    tabs[key].className = "flex-1 text-slate-600 hover:text-slate-900 py-2.5 rounded-lg font-semibold text-xs flex items-center justify-center space-x-2 transition-all";
+                }
+            });
         }
 
-        // Lógica de validación de clientes con limpieza radical garantizada
         function detectarCliente(event) {
             if (event.key === 'Enter') {
                 event.preventDefault();
+                event.stopPropagation();
                 
-                const cedulaInput = event.target.value.trim();
+                const rucCedula = event.target.value.trim();
                 const inputNombre = document.getElementById('cliente-nombre');
                 const inputDir = document.getElementById('cliente-dir');
                 const inputEmail = document.getElementById('cliente-email');
 
-                if (baseClientes[cedulaInput]) {
-                    // Si existe, cargar inmediatamente
-                    inputNombre.value = baseClientes[cedulaInput].nombre;
-                    inputDir.value = baseClientes[cedulaInput].direccion;
-                    inputEmail.value = baseClientes[cedulaInput].email;
+                if (baseClientes[rucCedula]) {
+                    inputNombre.value = baseClientes[rucCedula].nombre;
+                    inputDir.value = baseClientes[rucCedula].direccion;
+                    inputEmail.value = baseClientes[rucCedula].email;
                 } else {
-                    // SI NO EXISTE: Forzar vaciado total de la propiedad value en el DOM
                     inputNombre.value = "";
                     inputDir.value = "";
                     inputEmail.value = "";
-
-                    // Forzar limpieza a nivel de atributo nativo del navegador
-                    inputNombre.setAttribute('value', '');
-                    inputDir.setAttribute('value', '');
-                    inputEmail.setAttribute('value', '');
-
-                    // Mandar foco directo para el nuevo registro
+                    inputNombre.removeAttribute('value');
+                    inputDir.removeAttribute('value');
+                    inputEmail.removeAttribute('value');
                     inputNombre.focus();
                 }
             }
@@ -216,62 +278,85 @@
                 const codigo = input.value.trim();
                 
                 if (codigo) {
-                    // Simular inserción directa al detalle sin alertas
-                    carrito.push({
-                        descripcion: "Artículo #" + codigo,
-                        categoria: "General",
-                        cantidad: 1,
-                        precio: 2.50
-                    });
-                    renderizarTabla();
+                    const conocido = baseProductos[codigo];
+                    const existente = carrito.find(item => item.codigo === codigo);
+
+                    if (existente) {
+                        existente.cantidad++;
+                    } else {
+                        if (conocido) {
+                            carrito.push({ codigo, ...conocido, cantidad: 1 });
+                        } else {
+                            carrito.push({ codigo, detalle: "Artículo General #" + codigo, precio: 1.00, iva: true, cantidad: 1 });
+                        }
+                    }
+                    renderizarTablaFactura();
                 }
                 input.value = "";
             }
         }
 
-        function renderizarTabla() {
+        function renderizarTablaFactura() {
             const tbody = document.getElementById('tabla-items');
             const mensajeVacio = document.getElementById('ticket-vacio');
             tbody.innerHTML = "";
 
             if (carrito.length === 0) {
                 mensajeVacio.classList.remove('hidden');
-                actualizarTotales(0);
+                calcularTotales(0, 0);
                 return;
             }
 
             mensajeVacio.classList.add('hidden');
-            let subtotalNeto = 0;
+            let subtotal = 0;
+            let totalIva = 0;
 
             carrito.forEach(item => {
                 const totalLinea = item.precio * item.cantidad;
-                subtotalNeto += totalLinea;
+                subtotal += totalLinea;
+                if (item.iva) totalIva += totalLinea * 0.15;
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 border-b border-slate-100 transition-colors">
-                        <td class="py-2.5 px-3 text-slate-900 font-semibold">${item.descripcion}</td>
-                        <td class="py-2.5 px-3 text-slate-400 font-mono text-[11px]">${item.categoria}</td>
-                        <td class="py-2.5 px-3 text-center font-bold text-slate-800">${item.cantidad}</td>
+                        <td class="py-2.5 px-3 font-mono text-slate-400 text-[11px]">${item.codigo}</td>
+                        <td class="py-2.5 px-3 text-slate-900 font-bold">${item.detalle}</td>
+                        <td class="py-2.5 px-3 text-center text-slate-800 font-bold">${item.cantidad}</td>
                         <td class="py-2.5 px-3 text-right text-slate-500">$${item.precio.toFixed(2)}</td>
-                        <td class="py-2.5 px-3 text-right text-slate-900 font-bold">$${totalLinea.toFixed(2)}</td>
+                        <td class="py-2.5 px-3 text-right text-slate-900 font-black">$${totalLinea.toFixed(2)}</td>
                     </tr>
                 `;
             });
 
-            actualizarTotales(subtotalNeto);
+            calcularTotales(subtotal, totalIva);
         }
 
-        function actualizarTotales(subtotal) {
-            const iva = subtotal * 0.15;
+        function calcularTotales(subtotal, iva) {
             const total = subtotal + iva;
             document.getElementById('txt-subtotal').innerText = `$${subtotal.toFixed(2)}`;
             document.getElementById('txt-iva').innerText = `$${iva.toFixed(2)}`;
             document.getElementById('txt-total').innerText = `$${total.toFixed(2)}`;
         }
 
+        function cargarCatalogoUI() {
+            const tbody = document.getElementById('tabla-catalogo-items');
+            tbody.innerHTML = "";
+            Object.keys(baseProductos).forEach(cod => {
+                const p = baseProductos[cod];
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-3 px-4 font-mono font-bold text-slate-500">${cod}</td>
+                        <td class="py-3 px-4 text-slate-900 font-semibold">${p.detalle}</td>
+                        <td class="py-3 px-4 text-right text-slate-900 font-bold">$${p.precio.toFixed(2)}</td>
+                        <td class="py-3 px-4 text-center">${p.iva ? '<span class="text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded text-[10px] font-bold">15% IVA</span>' : '<span class="text-slate-400 bg-slate-50 px-2.5 py-0.5 rounded text-[10px]">0% IVA</span>'}</td>
+                    </tr>
+                `;
+            });
+        }
+
         function limpiarTicket() {
             carrito = [];
-            renderizarTabla();
+            renderizarTablaFactura();
+            document.getElementById('codigo-barras').focus();
         }
     </script>
 </body>
