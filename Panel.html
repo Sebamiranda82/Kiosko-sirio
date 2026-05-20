@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Centro Ferretero Bacilio - Sistema de Gestión</title>
+    <title>Centro Ferretero Bacilio - Sistema de Gestión v9.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -26,7 +26,7 @@
                 </div>
                 <div>
                     <h1 class="text-xl font-black tracking-tight">Centro Ferretero Bacilio</h1>
-                    <p class="text-[10px] text-slate-400 font-mono tracking-wider">Control Panel v9.0 • Anuar Sistemas</p>
+                    <p class="text-[10px] text-slate-400 font-mono tracking-wider">Control Panel v9.2 • Anuar Sistemas</p>
                 </div>
             </div>
             <div class="flex items-center space-x-3">
@@ -38,16 +38,7 @@
     </header>
 
     <!-- Contenido Principal -->
-    <main class="max-w-7xl mx-auto px-6 py-8 space-y-6">
-        
-        <!-- Alerta de Lógica Activa -->
-        <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl flex items-start space-x-3">
-            <i data-lucide="info" class="w-5 h-5 text-blue-600 shrink-0 mt-0.5"></i>
-            <div class="text-xs text-blue-800 space-y-1">
-                <p class="font-bold">Modo de validación estricta de clientes activo:</p>
-                <p>Al pulsar <kbd class="bg-white px-1.5 py-0.5 border border-blue-300 rounded shadow-sm font-mono font-bold text-[10px]">Enter</kbd> en el campo de identificación, si el cliente existe se cargarán sus datos automáticamente. Si es un cliente nuevo, se vaciarán por completo los campos de Razón Social, Dirección y Email, enviando el enfoque de edición al nombre.</p>
-            </div>
-        </div>
+    <main class="max-w-7xl mx-auto px-6 py-6 space-y-6">
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
@@ -58,18 +49,18 @@
                         <i data-lucide="scan-barcode" class="w-4 h-4 text-blue-600"></i>
                         <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Ingreso de Artículos</h3>
                     </div>
-                    <input type="text" id="codigo-barras" onkeypress="detectarTeclado(event)" autofocus placeholder="Escanee código de barras o digite..." 
-                           class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all font-mono text-center mb-4">
+                    <input type="text" id="codigo-barras" onkeypress="detectarTeclado(event)" autofocus placeholder="Escanee código de barras o digite (Ej: 1234)..." 
+                           class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all font-mono text-center mb-4 shadow-inner">
                     
                     <div class="border border-dashed border-slate-300 rounded-xl bg-slate-50 p-4 text-center text-xs text-slate-400">
                         <div id="reader" class="w-full mb-2"></div>
                         <i data-lucide="camera" class="w-5 h-5 mx-auto mb-1 text-slate-300"></i>
-                        Escáner de cámara integrado listo
+                        Escáner de cámara listo
                     </div>
                 </div>
             </div>
 
-            <!-- Tabla del Ticket -->
+            <!-- Tabla del Ticket (¡CORREGIDO: Agrega dinámicamente sin alertas molestas!) -->
             <div class="lg:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between min-h-[300px]">
                 <div>
                     <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
@@ -78,7 +69,7 @@
                             Limpiar Detalle
                         </button>
                     </div>
-                    <div class="overflow-x-auto">
+                    <div class="overflow-x-auto max-h-[200px] overflow-y-auto">
                         <table class="w-full text-left text-xs">
                             <thead>
                                 <tr class="bg-slate-50 text-slate-400 uppercase border-b border-slate-200 font-mono text-[10px]">
@@ -89,7 +80,9 @@
                                     <th class="py-2 px-3 text-right">Total</th>
                                 </tr>
                             </thead>
-                            <tbody id="tabla-items" class="divide-y divide-slate-100 font-medium"></tbody>
+                            <tbody id="tabla-items" class="divide-y divide-slate-100 font-medium">
+                                <!-- Filas dinámicas -->
+                            </tbody>
                         </table>
                     </div>
                     <div id="ticket-vacio" class="py-12 text-center text-slate-400 text-xs">
@@ -99,7 +92,7 @@
             </div>
         </div>
 
-        <!-- Sección de Datos del Cliente -->
+        <!-- Sección de Datos del Cliente (¡CORREGIDO: Limpieza absoluta instantánea!) -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div class="lg:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <div class="flex items-center space-x-2 mb-4 pb-2 border-b border-slate-100">
@@ -109,7 +102,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-medium">
                     <div>
                         <label class="block text-slate-400 mb-1 font-mono uppercase text-[10px]">RUC / Cédula / DNI + [Enter]</label>
-                        <input type="text" id="cliente-id" onkeydown="detectarCliente(event)" placeholder="Presione enter al terminar..." class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-mono font-bold transition-all">
+                        <input type="text" id="cliente-id" onkeydown="detectarCliente(event)" placeholder="Digite identificación y presione Enter..." class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-mono font-bold transition-all">
                     </div>
                     <div>
                         <label class="block text-slate-400 mb-1 font-mono uppercase text-[10px]">Nombre / Razón Social</label>
@@ -158,19 +151,30 @@
     <script>
         lucide.createIcons();
 
+        // Base de Datos Estricta de Clientes Existentes
         const baseClientes = {
             "9999999999999": { nombre: "CONSUMIDOR FINAL", direccion: "Av. Principal Ecuador", email: "consumidor@kiosco.com" },
             "0999999999001": { nombre: "ANUAR SISTEMAS", direccion: "Urdesa Central", email: "info@anuarsistemas.com" }
         };
 
+        // Catálogo Base de Productos
+        const baseProductos = {
+            "1234": { detalle: "Artículo Comercial 1234", precio: 2.50, iva: true },
+            "78610001": { detalle: "Coca Cola 500ml", precio: 0.85, iva: true },
+            "G46100902": { detalle: "Módulo Ferretero Demo", precio: 5.00, iva: true }
+        };
+
+        let carrito = [];
+
         window.addEventListener('DOMContentLoaded', () => {
-            // Valores iniciales por defecto estables
+            // Inicializar con Consumidor Final estático
             document.getElementById('cliente-id').value = "9999999999999";
             document.getElementById('cliente-nombre').value = "CONSUMIDOR FINAL";
             document.getElementById('cliente-dir').value = "Av. Principal Ecuador";
             document.getElementById('cliente-email').value = "consumidor@kiosco.com";
         });
 
+        // SOLUCIÓN ERROR 2: Limpieza radical y forzada de campos si no existe
         function detectarCliente(event) {
             if (event.key === 'Enter') {
                 event.preventDefault();
@@ -182,39 +186,103 @@
                 const inputEmail = document.getElementById('cliente-email');
 
                 if (baseClientes[cedulaInput]) {
-                    // SI EXISTE: Autocarga inmediata
+                    // SI EXISTE: Cargar automáticamente
                     const c = baseClientes[cedulaInput];
                     inputNombre.value = c.nombre;
                     inputDir.value = c.direccion;
                     inputEmail.value = c.email;
                 } else {
-                    // SI NO EXISTE: Limpieza absoluta de campos para ingreso nuevo
+                    // SI NO EXISTE: Vaciar absolutamente todo de raíz para cliente nuevo
                     inputNombre.value = "";
                     inputDir.value = "";
                     inputEmail.value = "";
 
-                    // Forzar anulación en caché interna del DOM
                     inputNombre.removeAttribute('value');
                     inputDir.removeAttribute('value');
                     inputEmail.removeAttribute('value');
 
-                    // Posicionar cursor para escritura inmediata
+                    // Hacer focus inmediato al campo nombre para escribir
                     inputNombre.focus();
                 }
             }
         }
 
+        // SOLUCIÓN ERROR 1: Eliminar el alert molesto e inyectar el producto directo a la UI
         function detectarTeclado(event) {
             if (event.key === 'Enter') {
                 event.preventDefault();
-                document.getElementById('codigo-barras').value = "";
-                alert("Artículo añadido al detalle actual.");
+                const input = document.getElementById('codigo-barras');
+                const codigo = input.value.trim();
+                
+                if (codigo) {
+                    procesarArticulo(codigo);
+                }
+                input.value = "";
             }
         }
 
+        function procesarArticulo(codigo) {
+            const conocido = baseProductos[codigo];
+            const existente = carrito.find(item => item.codigo === codigo);
+
+            if (existente) {
+                existente.cantidad++;
+            } else {
+                if (conocido) {
+                    carrito.push({ codigo, ...conocido, cantidad: 1 });
+                } else {
+                    // Producto comodín si digitan cualquier otro número
+                    carrito.push({ codigo, detalle: "Artículo General #" + codigo, precio: 1.50, iva: true, cantidad: 1 });
+                }
+            }
+            renderizarTablaTicket();
+        }
+
+        function renderizarTablaTicket() {
+            const tbody = document.getElementById('tabla-items');
+            const mensajeVacio = document.getElementById('ticket-vacio');
+            tbody.innerHTML = "";
+
+            if (carrito.length === 0) {
+                mensajeVacio.classList.remove('hidden');
+                calcularValoresTotales(0, 0);
+                return;
+            }
+
+            mensajeVacio.classList.add('hidden');
+            let subtotal = 0;
+            let totalIva = 0;
+
+            carrito.forEach(item => {
+                const totalLinea = item.precio * item.cantidad;
+                subtotal += totalLinea;
+                if (item.iva) totalIva += totalLinea * 0.15;
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 border-b border-slate-100 transition-colors">
+                        <td class="py-2.5 px-3 font-mono text-slate-400 text-[11px]">${item.codigo}</td>
+                        <td class="py-2.5 px-3 text-slate-900 font-semibold">${item.detalle}</td>
+                        <td class="py-2.5 px-3 text-center font-bold text-slate-800">${item.cantidad}</td>
+                        <td class="py-2.5 px-3 text-right text-slate-500">$${item.precio.toFixed(2)}</td>
+                        <td class="py-2.5 px-3 text-right text-slate-900 font-bold">$${totalLinea.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+
+            calcularValoresTotales(subtotal, totalIva);
+        }
+
+        function calcularValoresTotales(subtotal, iva) {
+            const total = subtotal + iva;
+            document.getElementById('txt-subtotal').innerText = `$${subtotal.toFixed(2)}`;
+            document.getElementById('txt-iva').innerText = `$${iva.toFixed(2)}`;
+            document.getElementById('txt-total').innerText = `$${total.toFixed(2)}`;
+        }
+
         function limpiarTicket() {
-            document.getElementById('tabla-items').innerHTML = "";
-            document.getElementById('ticket-vacio').classList.remove('hidden');
+            carrito = [];
+            renderizarTablaTicket();
+            document.getElementById('codigo-barras').focus();
         }
     </script>
 </body>
