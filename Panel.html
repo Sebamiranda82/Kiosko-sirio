@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tienda EGlobal - Sistema Integral v10.5</title>
+    <title>Tienda EGlobal - Sistema Integral v10.7</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -16,16 +16,6 @@
     </style>
 </head>
 <body class="bg-[#f8fafc] font-sans antialiased text-slate-800">
-
-    <div id="barra-notificacion-cambios" class="bg-amber-500 text-slate-950 px-6 py-2.5 text-xs font-bold border-b border-amber-600 shadow-sm flex items-center justify-between">
-        <div class="flex items-center space-x-2">
-            <i data-lucide="info" class="w-4 h-4 text-slate-900 shrink-0"></i>
-            <span>🛠️ VERSIÓN 10.5 MULTIPROPÓSITO: Rebranding operativo completo. Nombre de la aplicación actualizado a Tienda EGlobal y desarrollador asignado a ANUAR PROYECTOS.</span>
-        </div>
-        <button onclick="document.getElementById('barra-notificacion-cambios').remove()" class="bg-amber-600/30 hover:bg-amber-600/50 text-slate-900 px-2 py-1 rounded font-mono text-[10px] transition-colors ml-4">
-            [Cerrar Aviso]
-        </button>
-    </div>
 
     <header class="bg-gradient-to-r from-blue-900 to-slate-900 text-white shadow-md border-b border-blue-800/40">
         <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
@@ -105,8 +95,7 @@
                                         <th class="py-2 px-3 text-right">Total</th>
                                     </tr>
                                 </thead>
-                                <tbody id="tabla-items" class="divide-y divide-slate-100 font-medium">
-                                    </tbody>
+                                <tbody id="tabla-items" class="divide-y divide-slate-100 font-medium"></tbody>
                             </table>
                         </div>
                         <div id="ticket-vacio" class="py-12 text-center text-slate-400 text-xs">
@@ -157,9 +146,14 @@
                             <span id="txt-total" class="text-emerald-400 text-2xl font-black">$0.00</span>
                         </div>
                     </div>
-                    <button onclick="alert('Comprobante guardado de forma interna')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl transition-colors text-center text-xs uppercase tracking-wide">
-                        REGISTRAR COMPROBANTE (F12)
-                    </button>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="alert('Comprobante guardado internamente')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-2 rounded-xl transition-colors text-center text-[11px] uppercase tracking-wide">
+                            GUARDAR (F12)
+                        </button>
+                        <button onclick="alert('Enviando al SRI...')" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-2 rounded-xl transition-colors text-center text-[11px] uppercase tracking-wide">
+                            MANDAR SRI
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -179,10 +173,8 @@
                             <th class="py-3 px-4 text-center">Impuesto (IVA)</th>
                         </tr>
                     </thead>
-                    <tbody id="tabla-catalogo-items" class="divide-y divide-slate-100 font-medium text-slate-700">
-                        </tbody>
-                </table>
-            </div>
+                    <tbody id="tabla-catalogo-items" class="divide-y divide-slate-100 font-medium text-slate-700"></table>
+                </div>
         </div>
 
         <div id="view-clientes" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
@@ -200,10 +192,8 @@
                             <th class="py-3 px-4">Correo Electrónico</th>
                         </tr>
                     </thead>
-                    <tbody id="tabla-clientes-items" class="divide-y divide-slate-100 font-medium text-slate-700">
-                        </tbody>
-                </table>
-            </div>
+                    <tbody id="tabla-clientes-items" class="divide-y divide-slate-100 font-medium text-slate-700"></table>
+                </div>
         </div>
 
         <div id="view-db" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
@@ -211,8 +201,7 @@
                 <i data-lucide="database" class="text-blue-600 w-5 h-5"></i>
                 <h3 class="font-bold text-sm text-slate-700">Sincronización de Datos (ANUAR PROYECTOS)</h3>
             </div>
-            <p class="text-xs text-slate-500">Módulo de sincronización masiva para archivos en formato de texto delimitado por comas (CSV) o planillas de Excel.</p>
-            <div class="border-2 border-dashed border-slate-300 rounded-xl p-10 text-center bg-slate-50 hover:bg-slate-100/50 transition-colors cursor-pointer">
+            <div class="border-2 border-dashed border-slate-300 rounded-xl p-10 text-center bg-slate-50 cursor-pointer">
                 <i data-lucide="file-spreadsheet" class="w-10 h-10 text-slate-400 mx-auto mb-2"></i>
                 <p class="text-xs font-bold text-slate-600">Suelte el archivo estructurado para actualizar la base de datos local</p>
             </div>
@@ -223,84 +212,66 @@
     <script>
         lucide.createIcons();
 
-        // Base interna de datos general de clientes
         const baseClientes = {
             "9999999999999": { nombre: "CONSUMIDOR FINAL", direccion: "Av. Principal Ecuador", email: "consumidor@eglobal.com" },
             "0999999999001": { nombre: "ANUAR PROYECTOS", direccion: "Urdesa Central", email: "info@anuarproyectos.com" },
-            "0921548763001": { nombre: "DISTRIBUIDORA NORTE S.A.", direccion: "Av. Juan Tanca Marengo, Guayaquil", email: "compras@distribuidora.com" },
-            "0918457261": { nombre: "CARLOS ALBERTO MENDOZA", direccion: "Alborada 4ta Etapa", email: "carlos.mendoza@gmail.com" },
-            "1792456182001": { nombre: "CONSTRUCTORA PACÍFICO S.A.", direccion: "Via a la Costa Km 11.5", email: "proyectos@cpacifico.com" }
+            "0967482498001": { nombre: "CONSUMIDOR FINAL", direccion: "Av. Principal Ecuador", email: "consumidor@eglobal.com" },
+            "0967482498": { nombre: "CONSUMIDOR FINAL", direccion: "Av. Principal Ecuador", email: "consumidor@eglobal.com" }
         };
 
-        // Base interna de productos multipropósito
         const baseProductos = {
-            "1234": { detalle: "Artículo Comercial Estándar Mod A", precio: 1.50, iva: true },
-            "78610001": { detalle: "Item Tecnológico Importado Premium", precio: 25.00, iva: true },
-            "5566": { detalle: "Kit Logístico de Suministros G1", precio: 8.50, iva: false },
-            "2021": { detalle: "Unidad Operativa de Consumo Tipo B", precio: 4.80, iva: true },
-            "2022": { detalle: "Herramienta Técnica Industrial H3", precio: 12.10, iva: true },
-            "2023": { detalle: "Paquete de Empaque Reforzado (x100)", precio: 5.50, iva: false }
+            "1234": { detalle: "Artículo Comercial Estándar Mod A", precio: 2.50, iva: true },
+            "2021": { detalle: "Unidad Operativa de Consumo Tipo B", precio: 4.80, iva: true }
         };
 
         let carrito = [];
 
         window.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('cliente-id').value = "9999999999999";
+            document.getElementById('cliente-id').value = "0967482498001";
             document.getElementById('cliente-nombre').value = "CONSUMIDOR FINAL";
             document.getElementById('cliente-dir').value = "Av. Principal Ecuador";
             document.getElementById('cliente-email').value = "consumidor@eglobal.com";
             cargarCatalogoUI();
             cargarClientesUI();
+            renderizarTablaFactura();
         });
 
-        // CONTROL MULTI-PESTAÑA
         function cambiarPestana(idVista) {
-            const vistas = ['caja', 'catalogo', 'clientes', 'db'];
-            
-            vistas.forEach(v => {
-                const elVista = document.getElementById(`view-${v}`);
-                const elTab = document.getElementById(`tab-${v}`);
-                
-                if (v === idVista) {
-                    elVista.classList.remove('hidden');
-                    elTab.className = "flex-1 bg-slate-900 text-white py-2.5 rounded-lg font-bold text-xs flex items-center justify-center space-x-2 shadow-sm transition-all min-w-[120px]";
-                } else {
-                    elVista.classList.add('hidden');
-                    elTab.className = "flex-1 text-slate-600 hover:text-slate-900 py-2.5 rounded-lg font-semibold text-xs flex items-center justify-center space-x-2 transition-all min-w-[120px]";
-                }
+            ['caja', 'catalogo', 'clientes', 'db'].forEach(v => {
+                document.getElementById(`view-${v}`).classList.toggle('hidden', v !== idVista);
+                document.getElementById(`tab-${v}`).className = v === idVista 
+                    ? "flex-1 bg-slate-900 text-white py-2.5 rounded-lg font-bold text-xs flex items-center justify-center space-x-2 shadow-sm transition-all min-w-[120px]"
+                    : "flex-1 text-slate-600 hover:text-slate-900 py-2.5 rounded-lg font-semibold text-xs flex items-center justify-center space-x-2 transition-all min-w-[120px]";
             });
         }
 
-        // DETECTAR CLIENTE (CORREGIDO CON LIMPIEZA ABSOLUTA)
+        // CORRECCIÓN DIRECTA: Vacía y habilita el formulario si el cliente no existe
         function detectarCliente(event) {
             if (event.key === 'Enter') {
                 event.preventDefault();
-                event.stopPropagation();
-                
                 const rucCedula = event.target.value.trim();
+                const match = baseClientes[rucCedula];
+                
                 const inputNombre = document.getElementById('cliente-nombre');
                 const inputDir = document.getElementById('cliente-dir');
                 const inputEmail = document.getElementById('cliente-email');
 
-                if (baseClientes[rucCedula]) {
-                    inputNombre.value = baseClientes[rucCedula].nombre;
-                    inputDir.value = baseClientes[rucCedula].direccion;
-                    inputEmail.value = baseClientes[rucCedula].email;
+                if (match) {
+                    inputNombre.value = match.nombre;
+                    inputDir.value = match.direccion;
+                    inputEmail.value = match.email;
                 } else {
-                    // Forzar vaciado inmediato de valores en el DOM
+                    // Forzar vaciado inmediato de strings en el DOM
                     inputNombre.value = "";
                     inputDir.value = "";
                     inputEmail.value = "";
-                    // Forzar limpieza de atributos del elemento por seguridad
-                    inputNombre.setAttribute('value', '');
-                    inputDir.setAttribute('value', '');
-                    inputEmail.setAttribute('value', '');
+                    
+                    // Asegurar foco para tipeo rápido del operador
                     inputNombre.focus();
                 }
             }
         }
 
-        // DETECTAR ARTÍCULO (CORREGIDO: cantidad asignada correctamente)
         function detectarTeclado(event) {
             if (event.key === 'Enter') {
                 event.preventDefault();
@@ -312,10 +283,10 @@
                     const existente = carrito.find(item => item.codigo === codigo);
 
                     if (existente) {
-                        existente.cantidad++;
+                        existente.cantidad = parseInt(existente.cantidad) + 1;
                     } else {
                         if (conocido) {
-                            carrito.push({ codigo, ...conocido, cantidad: 1 });
+                            carrito.push({ codigo, detalle: conocido.detalle, precio: parseFloat(conocido.precio), iva: conocido.iva, cantidad: 1 });
                         } else {
                             carrito.push({ codigo, detalle: "Artículo General #" + codigo, precio: 1.00, iva: true, cantidad: 1 });
                         }
@@ -342,16 +313,21 @@
             let totalIva = 0;
 
             carrito.forEach(item => {
-                const totalLinea = item.precio * item.cantidad;
+                const precioNum = parseFloat(item.precio) || 0;
+                const cantNum = parseInt(item.cantidad) || 0;
+                const totalLinea = precioNum * cantNum;
+                
                 subtotal += totalLinea;
-                if (item.iva) totalIva += totalLinea * 0.15;
+                if (item.iva) {
+                    totalIva += totalLinea * 0.15;
+                }
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 border-b border-slate-100 transition-colors">
                         <td class="py-2.5 px-3 font-mono text-slate-400 text-[11px]">${item.codigo}</td>
                         <td class="py-2.5 px-3 text-slate-900 font-bold">${item.detalle}</td>
-                        <td class="py-2.5 px-3 text-center text-slate-800 font-bold">${item.cantidad}</td>
-                        <td class="py-2.5 px-3 text-right text-slate-500">$${item.precio.toFixed(2)}</td>
+                        <td class="py-2.5 px-3 text-center text-slate-800 font-bold">${cantNum}</td>
+                        <td class="py-2.5 px-3 text-right text-slate-500">$${precioNum.toFixed(2)}</td>
                         <td class="py-2.5 px-3 text-right text-slate-900 font-black">$${totalLinea.toFixed(2)}</td>
                     </tr>
                 `;
@@ -361,9 +337,12 @@
         }
 
         function calcularTotales(subtotal, iva) {
-            const total = subtotal + iva;
-            document.getElementById('txt-subtotal').innerText = `$${subtotal.toFixed(2)}`;
-            document.getElementById('txt-iva').innerText = `$${iva.toFixed(2)}`;
+            const s = parseFloat(subtotal) || 0;
+            const i = parseFloat(iva) || 0;
+            const total = s + i;
+            
+            document.getElementById('txt-subtotal').innerText = `$${s.toFixed(2)}`;
+            document.getElementById('txt-iva').innerText = `$${i.toFixed(2)}`;
             document.getElementById('txt-total').innerText = `$${total.toFixed(2)}`;
         }
 
@@ -376,7 +355,7 @@
                     <tr class="hover:bg-slate-50 transition-colors">
                         <td class="py-3 px-4 font-mono font-bold text-slate-500">${cod}</td>
                         <td class="py-3 px-4 text-slate-900 font-semibold">${p.detalle}</td>
-                        <td class="py-3 px-4 text-right text-slate-900 font-bold">$${p.precio.toFixed(2)}</td>
+                        <td class="py-3 px-4 text-right text-slate-900 font-bold">$${parseFloat(p.precio).toFixed(2)}</td>
                         <td class="py-3 px-4 text-center">${p.iva ? '<span class="text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded text-[10px] font-bold">15% IVA</span>' : '<span class="text-slate-400 bg-slate-50 px-2.5 py-0.5 rounded text-[10px]">0% IVA</span>'}</td>
                     </tr>
                 `;
