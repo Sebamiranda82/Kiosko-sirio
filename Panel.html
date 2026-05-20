@@ -3,15 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tienda EGlobal - Sistema Integral v10.9</title>
+    <title>Tienda EGlobal - Sistema Integral v11.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
+        /* Estilos de Impresión Optimizados para Ticket Térmico de 80mm o Guardado PDF */
         @media print {
             body * { visibility: hidden; }
             #area-impresion-ticket, #area-impresion-ticket * { visibility: visible; }
-            #area-impresion-ticket { position: absolute; left: 0; top: 0; width: 100%; }
+            #area-impresion-ticket { 
+                position: absolute; 
+                left: 0; 
+                top: 0; 
+                width: 80mm; 
+                max-width: 80mm;
+                padding: 0;
+                margin: 0;
+                font-family: 'Courier New', Courier, monospace;
+                font-size: 12px;
+                color: #000;
+            }
+            @page {
+                size: 80mm auto;
+                margin: 0;
+            }
         }
     </style>
 </head>
@@ -24,7 +40,7 @@
                     <i data-lucide="store" class="w-6 h-6 text-blue-400"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-black tracking-tight">Tienda EGlobal</h1>
+                    <h1 class="text-xl font-black tracking-tight" id="header-nombre-empresa">Tienda EGlobal</h1>
                     <p class="text-[10px] text-slate-400 font-mono tracking-wider">Sistema de Gestión ERP • ANUAR PROYECTOS</p>
                 </div>
             </div>
@@ -35,7 +51,7 @@
     </header>
 
     <nav class="max-w-7xl mx-auto px-6 mt-6">
-        <div class="flex p-1 bg-slate-200/80 rounded-xl space-x-1 max-w-2xl overflow-x-auto">
+        <div class="flex p-1 bg-slate-200/80 rounded-xl space-x-1 max-w-3xl overflow-x-auto">
             <button id="tab-caja" onclick="cambiarPestana('caja')" class="flex-1 bg-slate-900 text-white py-2.5 rounded-lg font-bold text-xs flex items-center justify-center space-x-2 shadow-sm transition-all min-w-[120px]">
                 <i data-lucide="calculator" class="w-4 h-4"></i>
                 <span>Caja de Ventas</span>
@@ -47,6 +63,10 @@
             <button id="tab-clientes" onclick="cambiarPestana('clientes')" class="flex-1 text-slate-600 hover:text-slate-900 py-2.5 rounded-lg font-semibold text-xs flex items-center justify-center space-x-2 transition-all min-w-[120px]">
                 <i data-lucide="users" class="w-4 h-4"></i>
                 <span>Clientes</span>
+            </button>
+            <button id="tab-empresa" onclick="cambiarPestana('empresa')" class="flex-1 text-slate-600 hover:text-slate-900 py-2.5 rounded-lg font-semibold text-xs flex items-center justify-center space-x-2 transition-all min-w-[120px]">
+                <i data-lucide="building-2" class="w-4 h-4"></i>
+                <span>Mi Empresa</span>
             </button>
         </div>
     </nav>
@@ -143,7 +163,7 @@
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-2">
-                        <button onclick="alert('Comprobante guardado internamente')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-2 rounded-xl transition-colors text-center text-[11px] uppercase tracking-wide">
+                        <button onclick="solicitarGuardadoVenta()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-2 rounded-xl transition-colors text-center text-[11px] uppercase tracking-wide">
                             GUARDAR (F12)
                         </button>
                         <button onclick="alert('Enviando al SRI...')" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-2 rounded-xl transition-colors text-center text-[11px] uppercase tracking-wide">
@@ -155,13 +175,11 @@
         </div>
 
         <div id="view-catalogo" class="hidden space-y-6">
-            
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <div class="flex items-center space-x-2 pb-3 border-b border-slate-100 mb-4">
                     <i data-lucide="database" class="text-blue-600 w-5 h-5"></i>
                     <h3 class="font-bold text-sm text-slate-800">Consola de Actualización Masiva (ANUAR PROYECTOS)</h3>
                 </div>
-                
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
                     <div class="md:col-span-4 space-y-1">
                         <label class="block text-slate-400 font-mono uppercase text-[10px] font-bold">Alcance del Cambio</label>
@@ -172,7 +190,6 @@
                             <option value="General">General</option>
                         </select>
                     </div>
-
                     <div class="md:col-span-4 space-y-1">
                         <label class="block text-slate-400 font-mono uppercase text-[10px] font-bold">Porcentaje de Ajuste (Ej: 10 o -5)</label>
                         <div class="relative flex items-center">
@@ -180,7 +197,6 @@
                             <input type="number" id="masivo-porcentaje" placeholder="10" class="w-full pl-8 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-bold focus:bg-white outline-none">
                         </div>
                     </div>
-
                     <div class="md:col-span-4 pt-4 md:pt-0">
                         <button onclick="ejecutarAjusteMasivo()" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-3 px-4 rounded-xl transition-all uppercase tracking-wide flex items-center justify-center space-x-2 shadow-sm">
                             <i data-lucide="refresh-cw" class="w-4 h-4"></i>
@@ -207,7 +223,7 @@
                             </tr>
                         </thead>
                         <tbody id="tabla-catalogo-items" class="divide-y divide-slate-100 font-medium text-slate-700"></table>
-                    </div>
+                </div>
             </div>
         </div>
 
@@ -230,10 +246,113 @@
                 </div>
         </div>
 
+        <div id="view-empresa" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+            <div class="flex items-center space-x-2 pb-3 border-b border-slate-100">
+                <i data-lucide="building-2" class="text-blue-600 w-5 h-5"></i>
+                <h3 class="font-bold text-sm text-slate-700">Configuración de Datos Fiscales de la Empresa (Emisión SRI)</h3>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs font-medium">
+                <div>
+                    <label class="block text-slate-400 mb-1 font-mono uppercase text-[10px] font-bold">RUC de la Empresa (13 dígitos)</label>
+                    <input type="text" id="empresa-ruc" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-mono font-bold transition-all" placeholder="0999999999001">
+                </div>
+                <div>
+                    <label class="block text-slate-400 mb-1 font-mono uppercase text-[10px] font-bold">Razón Social</label>
+                    <input type="text" id="empresa-razon-social" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="ANUAR SISTEMAS S.A.">
+                </div>
+                <div>
+                    <label class="block text-slate-400 mb-1 font-mono uppercase text-[10px] font-bold">Nombre Comercial</label>
+                    <input type="text" id="empresa-nombre-comercial" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="TIENDA EGLOBAL">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-slate-400 mb-1 font-mono uppercase text-[10px] font-bold">Dirección Matriz</label>
+                    <input type="text" id="empresa-direccion" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Urdesa Central, Guayaquil, Ecuador">
+                </div>
+                <div>
+                    <label class="block text-slate-400 mb-1 font-mono uppercase text-[10px] font-bold">Obligado a Llevar Contabilidad</label>
+                    <select id="empresa-contabilidad" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none text-xs font-semibold">
+                        <option value="NO">NO</option>
+                        <option value="SI">SI</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-slate-400 mb-1 font-mono uppercase text-[10px] font-bold">Establecimiento (3 dígitos)</label>
+                    <input type="text" id="empresa-establecimiento" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-mono text-center" placeholder="001">
+                </div>
+                <div>
+                    <label class="block text-slate-400 mb-1 font-mono uppercase text-[10px] font-bold">Punto de Emisión (3 dígitos)</label>
+                    <input type="text" id="empresa-punto" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-mono text-center" placeholder="002">
+                </div>
+                <div>
+                    <label class="block text-slate-400 mb-1 font-mono uppercase text-[10px] font-bold">Régimen Impositivo / Leyendas Fiscales</label>
+                    <select id="empresa-regimen" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none text-xs font-semibold">
+                        <option value="CONTRIBUYENTE RÉGIMEN RIMPE">CONTRIBUYENTE RÉGIMEN RIMPE</option>
+                        <option value="CONTRIBUYENTE NEGOCIO POPULAR - RÉGIMEN RIMPE">CONTRIBUYENTE NEGOCIO POPULAR - RÉGIMEN RIMPE</option>
+                        <option value="RÉGIMEN GENERAL">RÉGIMEN GENERAL</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="pt-4 border-t border-slate-100 flex justify-end">
+                <button onclick="guardarDatosEmpresa()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2.5 px-6 rounded-xl transition-all shadow-md uppercase tracking-wider flex items-center space-x-2">
+                    <i data-lucide="save" class="w-4 h-4"></i>
+                    <span>Guardar Parámetros Fiscales</span>
+                </button>
+            </div>
+        </div>
+
     </main>
+
+    <div id="modal-impresion" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 p-6 m-4 flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center pb-3 border-b border-slate-100">
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="printer" class="text-blue-600 w-5 h-5"></i>
+                    <h3 class="font-bold text-slate-900 text-sm">Venta Guardada Exitosamente</h3>
+                </div>
+                <button onclick="cerrarModalImpresion()" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <div class="py-3 text-center">
+                <p class="text-xs text-slate-600 font-semibold">¿Desea imprimir el ticket físico / guardar PDF para esta venta?</p>
+            </div>
+
+            <div class="bg-slate-100 p-4 rounded-xl overflow-y-auto flex-1 border border-slate-200 flex justify-center">
+                <div id="preview-ticket-modal" class="bg-white shadow-inner p-4 w-[72mm] font-mono text-[11px] text-black leading-tight border border-slate-300">
+                    </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 pt-4 border-t border-slate-100 mt-4">
+                <button onclick="cerrarModalImpresion()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs transition-colors uppercase tracking-wider">
+                    No Imprimir
+                </button>
+                <button onclick="ejecutarImpresionNative()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center space-x-2 shadow-md uppercase tracking-wider">
+                    <i data-lucide="printer" class="w-4 h-4"></i>
+                    <span>Imprimir / PDF</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="area-impresion-ticket" class="hidden"></div>
 
     <script>
         lucide.createIcons();
+
+        // Datos fiscales por defecto iniciales (Modificables en caliente desde la pestaña Mi Empresa)
+        let datosEmpresa = {
+            ruc: "0999999999001",
+            razonSocial: "ANUAR SISTEMAS S.A.",
+            nombreComercial: "TIENDA EGLOBAL",
+            direccion: "Urdesa Central, Guayaquil, Ecuador",
+            obligadoContabilidad: "NO",
+            establecimiento: "001",
+            puntoEmision: "002",
+            regimen: "CONTRIBUYENTE RÉGIMEN RIMPE"
+        };
 
         const baseClientes = {
             "9999999999999": { nombre: "CONSUMIDOR FINAL", direccion: "Av. Principal Ecuador", email: "consumidor@eglobal.com" },
@@ -242,7 +361,6 @@
             "0967482498": { nombre: "CONSUMIDOR FINAL", direccion: "Av. Principal Ecuador", email: "consumidor@eglobal.com" }
         };
 
-        // Base de productos expandida con la llave obligatoria de "categoria"
         const baseProductos = {
             "1234": { detalle: "Artículo Comercial Estándar Mod A", precio: 2.50, iva: true, categoria: "General" },
             "2021": { detalle: "Unidad Operativa de Consumo Tipo B", precio: 4.80, iva: true, categoria: "Suministros" },
@@ -257,18 +375,52 @@
             document.getElementById('cliente-nombre').value = "CONSUMIDOR FINAL";
             document.getElementById('cliente-dir').value = "Av. Principal Ecuador";
             document.getElementById('cliente-email').value = "consumidor@eglobal.com";
+            
+            // Cargar los campos de configuración fiscal del negocio
+            cargarFormularioEmpresaUI();
+            
             cargarCatalogoUI();
             cargarClientesUI();
             renderizarTablaFactura();
         });
 
         function cambiarPestana(idVista) {
-            ['caja', 'catalogo', 'clientes'].forEach(v => {
+            ['caja', 'catalogo', 'clientes', 'empresa'].forEach(v => {
                 document.getElementById(`view-${v}`).classList.toggle('hidden', v !== idVista);
                 document.getElementById(`tab-${v}`).className = v === idVista 
                     ? "flex-1 bg-slate-900 text-white py-2.5 rounded-lg font-bold text-xs flex items-center justify-center space-x-2 shadow-sm transition-all min-w-[120px]"
                     : "flex-1 text-slate-600 hover:text-slate-900 py-2.5 rounded-lg font-semibold text-xs flex items-center justify-center space-x-2 transition-all min-w-[120px]";
             });
+        }
+
+        // Carga los valores actuales en los inputs correspondientes de "Mi Empresa"
+        function cargarFormularioEmpresaUI() {
+            document.getElementById('empresa-ruc').value = datosEmpresa.ruc;
+            document.getElementById('empresa-razon-social').value = datosEmpresa.razonSocial;
+            document.getElementById('empresa-nombre-comercial').value = datosEmpresa.nombreComercial;
+            document.getElementById('empresa-direccion').value = datosEmpresa.direccion;
+            document.getElementById('empresa-contabilidad').value = datosEmpresa.obligadoContabilidad;
+            document.getElementById('empresa-establecimiento').value = datosEmpresa.establecimiento;
+            document.getElementById('empresa-punto').value = datosEmpresa.puntoEmision;
+            document.getElementById('empresa-regimen').value = datosEmpresa.regimen;
+            
+            // Sincronizar dinámicamente el título visual del header principal
+            document.getElementById('header-nombre-empresa').innerText = datosEmpresa.nombreComercial;
+        }
+
+        // Salva los cambios hechos por el dueño de la app
+        function guardarDatosEmpresa() {
+            datosEmpresa.ruc = document.getElementById('empresa-ruc').value.trim();
+            datosEmpresa.razonSocial = document.getElementById('empresa-razon-social').value.trim();
+            datosEmpresa.nombreComercial = document.getElementById('empresa-nombre-comercial').value.trim();
+            datosEmpresa.direccion = document.getElementById('empresa-direccion').value.trim();
+            datosEmpresa.obligadoContabilidad = document.getElementById('empresa-contabilidad').value;
+            datosEmpresa.establecimiento = document.getElementById('empresa-establecimiento').value.trim();
+            datosEmpresa.puntoEmision = document.getElementById('empresa-punto').value.trim();
+            datosEmpresa.regimen = document.getElementById('empresa-regimen').value;
+
+            document.getElementById('header-nombre-empresa').innerText = datosEmpresa.nombreComercial;
+            alert("Parámetros fiscales actualizados correctamente para el SRI.");
         }
 
         function detectarCliente(event) {
@@ -309,14 +461,13 @@
             cargarClientesUI();
         }
 
-        // LÓGICA DE AJUSTE DE PRECIO MASIVO POR CATEGORÍA
         function ejecutarAjusteMasivo() {
             const categoriaSeleccionada = document.getElementById('masivo-categoria').value;
             const porcentajeInput = document.getElementById('masivo-porcentaje').value;
             
             const factor = parseFloat(porcentajeInput);
             if (isNaN(factor) || factor === 0) {
-                alert("Por favor ingrese un porcentaje válido diferente de cero.");
+                alert("Por favor ingrese un porcentaje válido.");
                 return;
             }
 
@@ -331,11 +482,10 @@
                 }
             });
 
-            // Refrescar las visualizaciones e interfaces operativas afectadas
             cargarCatalogoUI();
             renderizarTablaFactura(); 
             document.getElementById('masivo-porcentaje').value = "";
-            alert(`Ajuste completado con éxito. Se actualizaron ${modificados} artículos de la categoría [${categoriaSeleccionada}].`);
+            alert(`Se actualizaron ${modificados} artículos de la categoría [${categoriaSeleccionada}].`);
         }
 
         function detectarTeclado(event) {
@@ -379,7 +529,6 @@
             let totalIva = 0;
 
             carrito.forEach(item => {
-                // Sincronizar el precio dinámicamente si cambió en el catálogo masivo
                 if (baseProductos[item.codigo]) {
                     item.precio = baseProductos[item.codigo].precio;
                 }
@@ -452,6 +601,95 @@
             renderizarTablaFactura();
             document.getElementById('codigo-barras').focus();
         }
+
+        function solicitarGuardadoVenta() {
+            if (carrito.length === 0) {
+                alert("No hay artículos en el carrito para guardar.");
+                return;
+            }
+
+            const rucCedula = document.getElementById('cliente-id').value.trim() || "9999999999999";
+            const nombre = document.getElementById('cliente-nombre').value.trim() || "CONSUMIDOR FINAL";
+            const direccion = document.getElementById('cliente-dir').value.trim() || "Av. Principal Ecuador";
+            
+            let subtotal = 0;
+            let totalIva = 0;
+            let filasArticulos = "";
+
+            carrito.forEach(item => {
+                const precioNum = parseFloat(item.precio) || 0;
+                const cantNum = parseInt(item.cantidad) || 0;
+                const totalLinea = precioNum * cantNum;
+                subtotal += totalLinea;
+                if (item.iva) totalIva += totalLinea * 0.15;
+
+                let detalleCorto = item.detalle.substring(0, 22).padEnd(22, ' ');
+                filasArticulos += `${detalleCorto} ${cantNum.toString().padStart(3, ' ')}   $${totalLinea.toFixed(2).padStart(7, ' ')}\n`;
+            });
+
+            const totalGeneral = subtotal + totalIva;
+            const fechaHora = new Date().toLocaleString();
+            
+            // Reemplazo dinámico usando los datos fiscales activos de "datosEmpresa"
+            const numEstablecimiento = `${datosEmpresa.establecimiento}-${datosEmpresa.puntoEmision}-` + Math.floor(100000000 + Math.random() * 900000000);
+
+            const estructuraTicketHTML = `
+                <div style="text-align: center; margin-bottom: 10px;">
+                    <strong style="font-size: 13px;">${datosEmpresa.nombreComercial}</strong><br>
+                    <span>${datosEmpresa.razonSocial}</span><br>
+                    <span>RUC: ${datosEmpresa.ruc}</span><br>
+                    <span>Matriz: ${datosEmpresa.direccion}</span><br>
+                    <span>Obligado Contabilidad: ${datosEmpresa.obligadoContabilidad}</span><br>
+                    <span style="font-size: 9px; font-weight: bold;">${datosEmpresa.regimen}</span><br>
+                    <span>--------------------------------</span><br>
+                    <strong>COMPROBANTE INTERNO DE VENTA</strong><br>
+                    <span>No: ${numEstablecimiento}</span>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <span>Fecha: ${fechaHora}</span><br>
+                    <span>Cliente: ${nombre}</span><br>
+                    <span>CI/RUC: ${rucCedula}</span><br>
+                    <span>Dir: ${direccion}</span><br>
+                    <span>--------------------------------</span>
+                </div>
+                <div style="margin-bottom: 10px; font-family: monospace; white-space: pre-wrap;">
+Articulo               Cant     Total
+--------------------------------
+${filasArticulos}--------------------------------
+                </div>
+                <div style="text-align: right; margin-bottom: 15px; font-family: monospace;">
+                    <span>SUBTOTAL NETO: $${subtotal.toFixed(2)}</span><br>
+                    <span>IVA TARIFA 15%: $${totalIva.toFixed(2)}</span><br>
+                    <strong style="font-size: 12px;">TOTAL PAGADO: $${totalGeneral.toFixed(2)}</strong>
+                </div>
+                <div style="text-align: center; font-size: 10px; margin-top: 10px;">
+                    <span>¡Gracias por su compra!</span><br>
+                    <span>Desarrollado por ANUAR PROYECTOS</span>
+                </div>
+            `;
+
+            document.getElementById('preview-ticket-modal').innerHTML = estructuraTicketHTML;
+            document.getElementById('area-impresion-ticket').innerHTML = estructuraTicketHTML;
+
+            document.getElementById('modal-impresion').classList.remove('hidden');
+        }
+
+        function cerrarModalImpresion() {
+            document.getElementById('modal-impresion').classList.add('hidden');
+            limpiarTicket();
+        }
+
+        function ejecutarImpresionNative() {
+            window.print();
+            cerrarModalImpresion();
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'F12') {
+                e.preventDefault();
+                solicitarGuardadoVenta();
+            }
+        });
     </script>
 </body>
 </html>
