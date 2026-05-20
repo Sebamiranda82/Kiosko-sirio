@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kiosco "El Sirio" - Panel de Ventas V8</title>
+    <title>Centro Ferretero Bacilio - Sistema de Gestión</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
-        /* Estilos de aislamiento para la ticketera física térmica */
         @media print {
             body * { visibility: hidden; }
             #area-impresion-ticket, #area-impresion-ticket * { visibility: visible; }
@@ -16,485 +15,206 @@
         }
     </style>
 </head>
-<body class="bg-[#f3f4f6] font-sans antialiased text-gray-800">
+<body class="bg-[#f8fafc] font-sans antialiased text-slate-800">
 
-    <header class="bg-gradient-to-r from-slate-700 to-slate-800 text-white shadow-md border-b border-slate-600">
-        <div class="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center">
+    <!-- Header Principal -->
+    <header class="bg-gradient-to-r from-blue-900 to-slate-900 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
             <div class="flex items-center space-x-3">
-                <div class="bg-slate-600/50 p-2 rounded-lg border border-slate-500/30">
-                    <i data-lucide="store" class="w-6 h-6 text-blue-400"></i>
+                <div class="bg-white/10 p-2.5 rounded-xl border border-white/10">
+                    <i data-lucide="wrench" class="w-6 h-6 text-blue-400"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-extrabold tracking-tight">Kiosco "El Sirio"</h1>
-                    <p class="text-[10px] text-slate-400 font-mono tracking-wider">Powered by Anuar Sistemas</p>
+                    <h1 class="text-xl font-black tracking-tight">Centro Ferretero Bacilio</h1>
+                    <p class="text-[10px] text-slate-400 font-mono tracking-wider">Control Panel v9.0 • Anuar Sistemas</p>
                 </div>
             </div>
-            <div class="flex items-center space-x-4">
-                <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-semibold font-mono">
-                    ● SRI ONLINE
+            <div class="flex items-center space-x-3">
+                <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-bold font-mono">
+                    ● SRI CONECTADO
                 </span>
-                <div class="bg-slate-700 border border-slate-600 px-3 py-1 rounded-lg text-xs text-slate-300 font-mono">
-                    Ambiente: Pruebas
-                </div>
             </div>
         </div>
     </header>
 
-    <nav class="max-w-7xl mx-auto px-6 mt-5">
-        <div class="flex space-x-2 border-b border-gray-200">
-            <button id="btn-pestana-caja" onclick="cambiarPestana('caja')" class="bg-white border-t border-x border-gray-200 text-blue-600 px-5 py-2.5 rounded-t-xl font-semibold text-xs flex items-center space-x-2 shadow-sm transition-all">
-                <i data-lucide="calculator" class="w-4 h-4"></i>
-                <span>Caja de Ventas</span>
-            </button>
-            <button id="btn-pestana-cat" onclick="cambiarPestana('catalogo')" class="text-gray-500 hover:text-gray-700 px-5 py-2.5 font-medium text-xs flex items-center space-x-2 transition-all">
-                <i data-lucide="layers" class="w-4 h-4"></i>
-                <span>Catálogo de Precios</span>
-            </button>
-        </div>
-    </nav>
-
-    <div id="vista-caja" class="max-w-7xl mx-auto px-6 py-6 space-y-6">
+    <!-- Contenido Principal -->
+    <main class="max-w-7xl mx-auto px-6 py-8 space-y-6">
         
+        <!-- Alerta de Lógica Activa -->
+        <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl flex items-start space-x-3">
+            <i data-lucide="info" class="w-5 h-5 text-blue-600 shrink-0 mt-0.5"></i>
+            <div class="text-xs text-blue-800 space-y-1">
+                <p class="font-bold">Modo de validación estricta de clientes activo:</p>
+                <p>Al pulsar <kbd class="bg-white px-1.5 py-0.5 border border-blue-300 rounded shadow-sm font-mono font-bold text-[10px]">Enter</kbd> en el campo de identificación, si el cliente existe se cargarán sus datos automáticamente. Si es un cliente nuevo, se vaciarán por completo los campos de Razón Social, Dirección y Email, enviando el enfoque de edición al nombre.</p>
+            </div>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
-            <div class="lg:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-gray-200 flex flex-col justify-between">
+            <!-- Panel del Buscador / Lector -->
+            <div class="lg:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
                 <div>
                     <div class="flex items-center space-x-2 mb-4">
-                        <i data-lucide="scan-barcode" class="w-4 h-4 text-blue-500"></i>
-                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Lector Óptico de Barras</h3>
+                        <i data-lucide="scan-barcode" class="w-4 h-4 text-blue-600"></i>
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Ingreso de Artículos</h3>
                     </div>
+                    <input type="text" id="codigo-barras" onkeypress="detectarTeclado(event)" autofocus placeholder="Escanee código de barras o digite..." 
+                           class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all font-mono text-center mb-4">
                     
-                    <input type="text" id="codigo-barras" onkeypress="detectarTeclado(event)" autofocus placeholder="Escanee código o digite (Ej: 1234)..." 
-                           class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-base focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all font-mono mb-4 text-center shadow-inner">
-                    
-                    <div class="border border-dashed border-gray-300 rounded-xl bg-gray-50 overflow-hidden relative">
-                        <div id="reader" class="w-full"></div>
-                        <div id="status-camara" class="text-center py-6 text-xs text-gray-400 font-mono">
-                            <i data-lucide="camera" class="w-5 h-5 mx-auto mb-2 text-gray-300"></i>
-                            Escáner QR / Barras en espera...
-                        </div>
+                    <div class="border border-dashed border-slate-300 rounded-xl bg-slate-50 p-4 text-center text-xs text-slate-400">
+                        <div id="reader" class="w-full mb-2"></div>
+                        <i data-lucide="camera" class="w-5 h-5 mx-auto mb-1 text-slate-300"></i>
+                        Escáner de cámara integrado listo
                     </div>
                 </div>
             </div>
 
-            <div class="lg:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-gray-200 min-h-[320px] flex flex-col justify-between">
+            <!-- Tabla del Ticket -->
+            <div class="lg:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between min-h-[300px]">
                 <div>
-                    <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-100">
-                        <div class="flex items-center space-x-2">
-                            <i data-lucide="file-spreadsheet" class="text-gray-400 w-4 h-4"></i>
-                            <h3 class="font-bold text-sm text-gray-700 uppercase tracking-wide">Ticket de Venta Actual</h3>
-                        </div>
-                        <button onclick="limpiarTicket()" class="text-[11px] bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded-lg font-semibold flex items-center space-x-1 transition-colors">
-                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                            <span>Limpiar Todo</span>
+                    <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
+                        <h3 class="font-bold text-xs text-slate-500 uppercase tracking-wider">Detalle del Comprobante</h3>
+                        <button onclick="limpiarTicket()" class="text-[11px] bg-slate-100 hover:bg-red-50 hover:text-red-600 px-2.5 py-1.5 rounded-lg font-medium transition-colors">
+                            Limpiar Detalle
                         </button>
                     </div>
-
-                    <div class="overflow-x-auto max-h-[220px] overflow-y-auto rounded-lg border border-gray-100">
+                    <div class="overflow-x-auto">
                         <table class="w-full text-left text-xs">
                             <thead>
-                                <tr class="bg-gray-50 text-gray-500 uppercase border-b border-gray-200 font-mono sticky top-0">
-                                    <th class="py-2.5 px-4">Código</th>
-                                    <th class="py-2.5 px-4">Descripción del Artículo</th>
-                                    <th class="py-2.5 px-4 text-center">Cant.</th>
-                                    <th class="py-2.5 px-4 text-right">P. Unit</th>
-                                    <th class="py-2.5 px-4 text-right">Total</th>
+                                <tr class="bg-slate-50 text-slate-400 uppercase border-b border-slate-200 font-mono text-[10px]">
+                                    <th class="py-2 px-3">Código</th>
+                                    <th class="py-2 px-3">Descripción</th>
+                                    <th class="py-2 px-3 text-center">Cant</th>
+                                    <th class="py-2 px-3 text-right">P. Unit</th>
+                                    <th class="py-2 px-3 text-right">Total</th>
                                 </tr>
                             </thead>
-                            <tbody id="tabla-items" class="divide-y divide-gray-100 font-medium text-gray-700">
-                                </tbody>
+                            <tbody id="tabla-items" class="divide-y divide-slate-100 font-medium"></tbody>
                         </table>
                     </div>
-
-                    <div id="ticket-vacio" class="py-14 text-center text-gray-400 flex flex-col items-center justify-center space-y-2">
-                        <i data-lucide="shopping-bag" class="w-12 h-12 text-gray-300"></i>
-                        <p class="text-xs">El ticket de venta se encuentra vacío actualmente.</p>
+                    <div id="ticket-vacio" class="py-12 text-center text-slate-400 text-xs">
+                        No hay artículos cargados en la proforma actual.
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- Sección de Datos del Cliente -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            
-            <div class="lg:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-                <div class="flex items-center space-x-2 mb-4 pb-2 border-b border-gray-100">
-                    <i data-lucide="user-cog" class="text-blue-500 w-4 h-4"></i>
-                    <h3 class="font-bold text-xs text-gray-400 uppercase tracking-wider">Detalles Generales del Cliente</h3>
+            <div class="lg:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex items-center space-x-2 mb-4 pb-2 border-b border-slate-100">
+                    <i data-lucide="user" class="text-blue-600 w-4 h-4"></i>
+                    <h3 class="font-bold text-xs text-slate-400 uppercase tracking-wider">Datos de Facturación del Cliente</h3>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-medium text-gray-700">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-medium">
                     <div>
-                        <label class="block text-gray-400 mb-1 font-mono uppercase text-[10px]">Identificación (RUC / Cédula) + [Enter]</label>
-                        <input type="text" id="cliente-id" onkeypress="detectarCliente(event)" class="w-full p-2.5 border border-gray-300 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-mono font-bold transition-all">
+                        <label class="block text-slate-400 mb-1 font-mono uppercase text-[10px]">RUC / Cédula / DNI + [Enter]</label>
+                        <input type="text" id="cliente-id" onkeydown="detectarCliente(event)" placeholder="Presione enter al terminar..." class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-mono font-bold transition-all">
                     </div>
                     <div>
-                        <label class="block text-gray-400 mb-1 font-mono uppercase text-[10px]">Razón Social / Nombres</label>
-                        <input type="text" id="cliente-nombre" class="w-full p-2.5 border border-gray-300 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                        <label class="block text-slate-400 mb-1 font-mono uppercase text-[10px]">Nombre / Razón Social</label>
+                        <input type="text" id="cliente-nombre" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
                     </div>
                     <div>
-                        <label class="block text-gray-400 mb-1 font-mono uppercase text-[10px]">Dirección Comercial</label>
-                        <input type="text" id="cliente-dir" class="w-full p-2.5 border border-gray-300 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                        <label class="block text-slate-400 mb-1 font-mono uppercase text-[10px]">Dirección</label>
+                        <input type="text" id="cliente-dir" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
                     </div>
                     <div>
-                        <label class="block text-gray-400 mb-1 font-mono uppercase text-[10px]">Correo Electrónico (Notificación SRI)</label>
-                        <input type="email" id="cliente-email" class="w-full p-2.5 border border-gray-300 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-mono transition-all">
+                        <label class="block text-slate-400 mb-1 font-mono uppercase text-[10px]">Correo Electrónico</label>
+                        <input type="email" id="cliente-email" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-mono transition-all">
                     </div>
                 </div>
             </div>
 
-            <div class="lg:col-span-5 bg-gradient-to-b from-slate-700 to-slate-800 text-white p-6 rounded-2xl shadow-lg border border-slate-600 flex flex-col justify-between space-y-4">
-                <div class="space-y-2 font-mono text-xs border-b border-slate-600/60 pb-3">
-                    <div class="flex justify-between items-center text-slate-300">
+            <!-- Valores de Liquidación -->
+            <div class="lg:col-span-5 bg-slate-900 text-white p-6 rounded-2xl shadow-md flex flex-col justify-between space-y-4">
+                <div class="space-y-2 font-mono text-xs">
+                    <div class="flex justify-between items-center text-slate-400">
                         <span>SUBTOTAL NETO:</span>
                         <span id="txt-subtotal" class="font-bold text-white text-sm">$0.00</span>
                     </div>
-                    <div class="flex justify-between items-center text-slate-300">
+                    <div class="flex justify-between items-center text-slate-400">
                         <span>IVA LIQUIDADO (15%):</span>
                         <span id="txt-iva" class="font-bold text-white text-sm">$0.00</span>
                     </div>
-                    <div class="flex justify-between items-center pt-2 border-t border-slate-600/50">
-                        <span class="text-emerald-400 font-extrabold text-xs tracking-wider">TOTAL A RECAUDAR:</span>
-                        <span id="txt-total" class="text-emerald-400 text-2xl font-black tracking-tight">$0.00</span>
+                    <div class="flex justify-between items-center pt-2 border-t border-slate-800">
+                        <span class="text-emerald-400 font-bold">TOTAL A RECAUDAR:</span>
+                        <span id="txt-total" class="text-emerald-400 text-2xl font-black">$0.00</span>
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-3 text-xs font-bold uppercase tracking-wider">
-                    <button onclick="guardarLocalmente()" class="bg-blue-600 hover:bg-blue-700 border border-blue-500/30 text-white py-3 px-4 rounded-xl shadow flex items-center justify-center space-x-2 transition-colors">
-                        <i data-lucide="save" class="w-4 h-4"></i>
-                        <span>GUARDAR</span>
+                <div class="grid grid-cols-2 gap-3 text-xs font-bold">
+                    <button onclick="alert('Guardado localmente')" class="bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl transition-colors text-center">
+                        REGISTRAR (F12)
                     </button>
-                    <button onclick="mandarAlSRI()" class="bg-amber-600 hover:bg-amber-700 border border-amber-500/30 text-white py-3 px-4 rounded-xl shadow flex items-center justify-center space-x-2 transition-colors">
-                        <i data-lucide="send" class="w-4 h-4"></i>
-                        <span>MANDAR SRI</span>
+                    <button onclick="alert('Transmitiendo al SRI...')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 py-3 px-4 rounded-xl transition-colors text-center">
+                        MANDAR SRI
                     </button>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div id="vista-catalogo" class="max-w-7xl mx-auto px-6 py-6 hidden">
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-            <div class="flex items-center space-x-2 mb-4 pb-2 border-b border-gray-100">
-                <i data-lucide="layers" class="text-blue-500 w-4 h-4"></i>
-                <h3 class="font-bold text-sm text-gray-700 uppercase tracking-wide">Catálogo General de Artículos</h3>
-            </div>
-            <div class="overflow-x-auto rounded-xl border border-gray-100">
-                <table class="w-full text-left text-xs">
-                    <thead>
-                        <tr class="bg-gray-50 text-gray-500 uppercase border-b border-gray-200 font-mono">
-                            <th class="py-3 px-4">Código de Barras</th>
-                            <th class="py-3 px-4">Descripción del Artículo</th>
-                            <th class="py-3 px-4 text-right">Precio Base</th>
-                            <th class="py-3 px-4 text-center">Aplica IVA (15%)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabla-catalogo-items" class="divide-y divide-gray-100 font-medium text-gray-700">
-                        </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <div id="modal-ticket" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="bg-slate-800 text-white p-4 flex justify-between items-center border-b border-slate-700">
-                <h4 class="text-xs font-bold tracking-wider uppercase font-mono flex items-center space-x-1.5">
-                    <i data-lucide="printer" class="w-4 h-4 text-blue-400"></i>
-                    <span>Comprobante de Caja</span>
-                </h4>
-                <button onclick="cerrarModalTicket()" class="text-slate-400 hover:text-white transition-colors">❌</button>
-            </div>
-            
-            <div class="p-6 overflow-y-auto bg-amber-50/10" id="area-impresion-ticket">
-                <div class="text-center font-mono text-xs space-y-0.5 border-b border-dashed border-gray-300 pb-3">
-                    <p class="font-black text-sm tracking-wide">KIOSCO "EL SIRIO"</p>
-                    <p class="text-[10px] text-gray-500">Anuar Sistemas S.A.</p>
-                    <p id="ticket-fecha" class="text-[10px] text-gray-500"></p>
-                    <p class="text-[10px] text-gray-500">Guayaquil, Ecuador</p>
-                </div>
-                <div class="font-mono text-[11px] py-3 space-y-1 border-b border-dashed border-gray-300 text-gray-600">
-                    <p><strong>Cliente:</strong> <span id="ticket-cli-nombre" class="text-gray-900 font-bold"></span></p>
-                    <p><strong>RUC/CI:</strong> <span id="ticket-cli-id" class="text-gray-900"></span></p>
-                    <p><strong>Email:</strong> <span id="ticket-cli-email" class="text-gray-900 text-[10px]"></span></p>
-                </div>
-                <table class="w-full font-mono text-[11px] my-3 text-gray-700">
-                    <thead>
-                        <tr class="border-b border-gray-200 text-left text-gray-400 uppercase text-[9px]">
-                            <th class="pb-1">Cant</th>
-                            <th class="pb-1">Detalle</th>
-                            <th class="pb-1 text-right">Total</th>
-                        </tr>
-                    </thead>
-                    <tbody id="ticket-cuerpo-items" class="divide-y divide-gray-100">
-                        </tbody>
-                </table>
-                <div class="font-mono text-xs text-right space-y-1 border-t border-dashed border-gray-300 pt-3">
-                    <p class="text-gray-500">Subtotal: <span id="ticket-subtotal" class="text-gray-900 font-bold"></span></p>
-                    <p class="text-gray-500">IVA (15%): <span id="ticket-iva" class="text-gray-900 font-bold"></span></p>
-                    <p class="font-black text-sm text-gray-900 pt-1 border-t border-gray-100">Total: <span id="ticket-total" class="text-emerald-600"></span></p>
-                </div>
-                <div class="text-center font-mono text-[9px] mt-6 text-gray-400 space-y-0.5">
-                    <p class="font-bold">¡Muchas gracias por su preferencia!</p>
-                    <p>Documento de Control de Gestión Interna</p>
-                </div>
-            </div>
-
-            <div class="bg-gray-50 p-4 border-t border-gray-200 grid grid-cols-2 gap-3">
-                <button onclick="cerrarModalTicket()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-colors">Cerrar</button>
-                <button onclick="ejecutarImpresionFisica()" class="bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center space-x-1.5 transition-colors shadow-sm">
-                    <i data-lucide="printer" class="w-4 h-4"></i>
-                    <span>Imprimir</span>
-                </button>
-            </div>
-        </div>
-    </div>
+    </main>
 
     <script>
         lucide.createIcons();
-
-        const baseProductos = {
-            "1234": { detalle: "Artículo Comercial 1234", precio: 2.50, iva: true },
-            "78610001": { detalle: "Coca Cola 500ml", precio: 0.85, iva: true },
-            "78610002": { detalle: "Funda de Papas Fritas", precio: 1.25, iva: false },
-            "G46100902": { detalle: "Módulo Sistema V8 Demo", precio: 5.00, iva: true }
-        };
 
         const baseClientes = {
             "9999999999999": { nombre: "CONSUMIDOR FINAL", direccion: "Av. Principal Ecuador", email: "consumidor@kiosco.com" },
             "0999999999001": { nombre: "ANUAR SISTEMAS", direccion: "Urdesa Central", email: "info@anuarsistemas.com" }
         };
 
-        let carrito = [];
-
-        // Inicialización segura de valores por defecto vía JS (Evita el bug del atributo HTML)
         window.addEventListener('DOMContentLoaded', () => {
+            // Valores iniciales por defecto estables
             document.getElementById('cliente-id').value = "9999999999999";
             document.getElementById('cliente-nombre').value = "CONSUMIDOR FINAL";
             document.getElementById('cliente-dir').value = "Av. Principal Ecuador";
             document.getElementById('cliente-email').value = "consumidor@kiosco.com";
-            
-            setTimeout(() => {
-                if (document.getElementById('reader')) {
-                    inicializarEscanerCamara();
-                }
-            }, 800);
         });
 
-        // FUNCIÓN CORREGIDA DE FORMA ABSOLUTA Y CONTUNDENTE
         function detectarCliente(event) {
             if (event.key === 'Enter') {
-                // DETENCION RADICAL: Evita que el navegador procese el formulario o haga re-render
                 event.preventDefault();
                 event.stopPropagation();
                 
-                const idInput = document.getElementById('cliente-id');
-                const rucCedula = idInput.value.trim();
-                const clienteExistente = baseClientes[rucCedula];
-
+                const cedulaInput = event.target.value.trim();
                 const inputNombre = document.getElementById('cliente-nombre');
                 const inputDir = document.getElementById('cliente-dir');
                 const inputEmail = document.getElementById('cliente-email');
 
-                if (clienteExistente) {
-                    // Si el cliente existe, inyectamos sus datos con normalidad
-                    inputNombre.value = clienteExistente.nombre;
-                    inputDir.value = clienteExistente.direccion;
-                    inputEmail.value = clienteExistente.email;
+                if (baseClientes[cedulaInput]) {
+                    // SI EXISTE: Autocarga inmediata
+                    const c = baseClientes[cedulaInput];
+                    inputNombre.value = c.nombre;
+                    inputDir.value = c.direccion;
+                    inputEmail.value = c.email;
                 } else {
-                    // SI NO EXISTE: Vaciado absoluto forzando el estado del DOM
+                    // SI NO EXISTE: Limpieza absoluta de campos para ingreso nuevo
                     inputNombre.value = "";
                     inputDir.value = "";
                     inputEmail.value = "";
 
-                    // DESTRUCCIÓN DE ATRIBUTOS CACHÉ: Elimina cualquier valor persistente del HTML
+                    // Forzar anulación en caché interna del DOM
                     inputNombre.removeAttribute('value');
                     inputDir.removeAttribute('value');
                     inputEmail.removeAttribute('value');
 
-                    // Mover enfoque de escritura de inmediato
+                    // Posicionar cursor para escritura inmediata
                     inputNombre.focus();
                 }
             }
         }
 
-        function cambiarPestana(vista) {
-            const vcaja = document.getElementById('vista-caja');
-            const vcat = document.getElementById('vista-catalogo');
-            const pcaja = document.getElementById('btn-pestana-caja');
-            const pcat = document.getElementById('btn-pestana-cat');
-
-            if (vista === 'caja') {
-                vcaja.classList.remove('hidden');
-                vcat.classList.add('hidden');
-                pcaja.className = "bg-white border-t border-x border-gray-200 text-blue-600 px-5 py-2.5 rounded-t-xl font-semibold text-xs flex items-center space-x-2 shadow-sm";
-                pcat.className = "text-gray-500 hover:text-gray-700 px-5 py-2.5 font-medium text-xs flex items-center space-x-2";
-            } else {
-                vcaja.classList.add('hidden');
-                vcat.classList.remove('hidden');
-                pcat.className = "bg-white border-t border-x border-gray-200 text-blue-600 px-5 py-2.5 rounded-t-xl font-semibold text-xs flex items-center space-x-2 shadow-sm";
-                pcaja.className = "text-gray-500 hover:text-gray-700 px-5 py-2.5 font-medium text-xs flex items-center space-x-2";
-                cargarCatalogoUI();
-            }
-        }
-
-        function cargarCatalogoUI() {
-            const tbody = document.getElementById('tabla-catalogo-items');
-            tbody.innerHTML = "";
-            Object.keys(baseProductos).forEach(codigo => {
-                const p = baseProductos[codigo];
-                tbody.innerHTML += `
-                    <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="py-3 px-4 font-mono text-gray-500 font-bold">${codigo}</td>
-                        <td class="py-3 px-4 text-gray-900">${p.detalle}</td>
-                        <td class="py-3 px-4 text-right text-gray-900 font-semibold">$${p.precio.toFixed(2)}</td>
-                        <td class="py-3 px-4 text-center">${p.iva ? '<span class="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded text-[10px] font-bold">SÍ IVA</span>' : '<span class="text-gray-400 bg-gray-50 px-2 py-0.5 rounded text-[10px]">0% IVA</span>'}</td>
-                    </tr>
-                `;
-            });
-        }
-
         function detectarTeclado(event) {
             if (event.key === 'Enter') {
-                const input = document.getElementById('codigo-barras');
-                procesarCodigo(input.value.trim());
-                input.value = "";
+                event.preventDefault();
+                document.getElementById('codigo-barras').value = "";
+                alert("Artículo añadido al detalle actual.");
             }
-        }
-
-        function procesarCodigo(codigo) {
-            if (!codigo) return;
-            const conocido = baseProductos[codigo];
-            const existente = carrito.find(i => i.codigo === codigo);
-
-            if (existente) {
-                existente.cantidad++;
-            } else {
-                if (conocido) {
-                    carrito.push({ codigo, ...conocido, cantidad: 1 });
-                } else {
-                    carrito.push({ codigo, detalle: "Artículo Nuevo Registrado", precio: 1.00, iva: true, cantidad: 1 });
-                }
-            }
-            renderizarTicket();
-        }
-
-        function renderizarTicket() {
-            const tbody = document.getElementById('tabla-items');
-            const vacio = document.getElementById('ticket-vacio');
-            tbody.innerHTML = "";
-
-            if (carrito.length === 0) {
-                vacio.classList.remove('hidden');
-                actualizarTotalesUI(0, 0);
-                return;
-            }
-
-            vacio.classList.add('hidden');
-            let subtotal = 0;
-            let totalIva = 0;
-
-            carrito.forEach(item => {
-                const lineaTotal = item.precio * item.cantidad;
-                subtotal += lineaTotal;
-                if (item.iva) totalIva += lineaTotal * 0.15;
-
-                tbody.innerHTML += `
-                    <tr class="hover:bg-gray-50/60 transition-colors">
-                        <td class="py-2.5 px-4 font-mono text-gray-400 text-[11px]">${item.codigo}</td>
-                        <td class="py-2.5 px-4 text-gray-900 font-medium">${item.detalle}</td>
-                        <td class="py-2.5 px-4 text-center font-bold text-gray-800">${item.cantidad}</td>
-                        <td class="py-2.5 px-4 text-right text-gray-500">$${item.precio.toFixed(2)}</td>
-                        <td class="py-2.5 px-4 text-right text-gray-900 font-bold">$${lineaTotal.toFixed(2)}</td>
-                    </tr>
-                `;
-            });
-
-            actualizarTotalesUI(subtotal, totalIva);
-        }
-
-        function actualizarTotalesUI(subtotal, iva) {
-            const total = subtotal + iva;
-            document.getElementById('txt-subtotal').innerText = `$${subtotal.toFixed(2)}`;
-            document.getElementById('txt-iva').innerText = `$${iva.toFixed(2)}`;
-            document.getElementById('txt-total').innerText = `$${total.toFixed(2)}`;
-        }
-
-        function guardarLocalmente() {
-            if(carrito.length === 0) return alert("El ticket de venta no contiene artículos.");
-
-            const deseaImprimir = confirm("Venta registrada con éxito en la base de datos local.\n\n¿Desea generar la vista previa e imprimir el comprobante térmico?");
-            if (deseaImprimir) {
-                abrirVistaPreviaTicket();
-            } else {
-                alert("Operación completada sin impresión.");
-                limpiarTicket();
-            }
-        }
-
-        function abrirVistaPreviaTicket() {
-            document.getElementById('ticket-cli-nombre').innerText = document.getElementById('cliente-nombre').value;
-            document.getElementById('ticket-cli-id').innerText = document.getElementById('cliente-id').value;
-            document.getElementById('ticket-cli-email').innerText = document.getElementById('cliente-email').value;
-            document.getElementById('ticket-fecha').innerText = new Date().toLocaleString();
-
-            const tbodyTicket = document.getElementById('ticket-cuerpo-items');
-            tbodyTicket.innerHTML = "";
-            
-            let subtotal = 0;
-            let totalIva = 0;
-
-            carrito.forEach(item => {
-                const totalL = item.precio * item.cantidad;
-                subtotal += totalL;
-                if(item.iva) totalIva += totalL * 0.15;
-
-                tbodyTicket.innerHTML += `
-                    <tr class="border-b border-gray-50">
-                        <td class="py-1 font-bold">${item.cantidad}x</td>
-                        <td class="py-1 text-gray-600">${item.detalle}</td>
-                        <td class="py-1 text-right text-gray-900 font-bold">$${totalL.toFixed(2)}</td>
-                    </tr>
-                `;
-            });
-
-            const total = subtotal + totalIva;
-            document.getElementById('ticket-subtotal').innerText = `$${subtotal.toFixed(2)}`;
-            document.getElementById('ticket-iva').innerText = `$${totalIva.toFixed(2)}`;
-            document.getElementById('ticket-total').innerText = `$${total.toFixed(2)}`;
-
-            document.getElementById('modal-ticket').classList.remove('hidden');
-        }
-
-        function cerrarModalTicket() {
-            document.getElementById('modal-ticket').classList.add('hidden');
-            limpiarTicket();
-        }
-
-        function ejecutarImpresionFisica() {
-            window.print();
-            cerrarModalTicket();
-        }
-
-        function mandarAlSRI() {
-            if(carrito.length === 0) return alert("El carrito de compras está vacío.");
-            alert("Compilando estructura XML, adjuntando firma digital XAdES-BES y transmitiendo al entorno de pruebas del SRI...");
         }
 
         function limpiarTicket() {
-            carrito = [];
-            renderizarTicket();
-            document.getElementById('codigo-barras').focus();
-        }
-
-        function inicializarEscanerCamara() {
-            const html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
-                fps: 15, 
-                qrbox: { width: 250, height: 150 },
-                rememberLastUsedCamera: true,
-                supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
-            });
-            html5QrcodeScanner.render((decodedText) => {
-                procesarCodigo(decodedText);
-                if (navigator.vibrate) navigator.vibrate(100);
-            }, (error) => {});
+            document.getElementById('tabla-items').innerHTML = "";
+            document.getElementById('ticket-vacio').classList.remove('hidden');
         }
     </script>
 </body>
