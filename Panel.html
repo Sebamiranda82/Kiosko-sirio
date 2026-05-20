@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Centro Ferretero Bacilio - Sistema Integral v10.4</title>
+    <title>Tienda EGlobal - Sistema Integral v10.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -20,7 +20,7 @@
     <div id="barra-notificacion-cambios" class="bg-amber-500 text-slate-950 px-6 py-2.5 text-xs font-bold border-b border-amber-600 shadow-sm flex items-center justify-between">
         <div class="flex items-center space-x-2">
             <i data-lucide="info" class="w-4 h-4 text-slate-900 shrink-0"></i>
-            <span>🛠️ VERSIÓN 10.4 CORREGIDA: Se solventó el cálculo de totales ($NaN) y se garantizó la limpieza inmediata y absoluta de los campos de facturación si la cédula/RUC ingresada no existe en la base.</span>
+            <span>🛠️ VERSIÓN 10.5 MULTIPROPÓSITO: Rebranding operativo completo. Nombre de la aplicación actualizado a Tienda EGlobal y desarrollador asignado a ANUAR PROYECTOS.</span>
         </div>
         <button onclick="document.getElementById('barra-notificacion-cambios').remove()" class="bg-amber-600/30 hover:bg-amber-600/50 text-slate-900 px-2 py-1 rounded font-mono text-[10px] transition-colors ml-4">
             [Cerrar Aviso]
@@ -31,11 +31,11 @@
         <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
             <div class="flex items-center space-x-3">
                 <div class="bg-white/10 p-2.5 rounded-xl border border-white/10">
-                    <i data-lucide="wrench" class="w-6 h-6 text-blue-400"></i>
+                    <i data-lucide="store" class="w-6 h-6 text-blue-400"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-black tracking-tight">Centro Ferretero Bacilio</h1>
-                    <p class="text-[10px] text-slate-400 font-mono tracking-wider">Sistema de Gestión ERP • Anuar Sistemas</p>
+                    <h1 class="text-xl font-black tracking-tight">Tienda EGlobal</h1>
+                    <p class="text-[10px] text-slate-400 font-mono tracking-wider">Sistema de Gestión ERP • ANUAR PROYECTOS</p>
                 </div>
             </div>
             <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-bold font-mono">
@@ -209,7 +209,7 @@
         <div id="view-db" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
             <div class="flex items-center space-x-2 pb-3 border-b border-slate-100">
                 <i data-lucide="database" class="text-blue-600 w-5 h-5"></i>
-                <h3 class="font-bold text-sm text-slate-700">Sincronización de Datos (Anuar Sistemas)</h3>
+                <h3 class="font-bold text-sm text-slate-700">Sincronización de Datos (ANUAR PROYECTOS)</h3>
             </div>
             <p class="text-xs text-slate-500">Módulo de sincronización masiva para archivos en formato de texto delimitado por comas (CSV) o planillas de Excel.</p>
             <div class="border-2 border-dashed border-slate-300 rounded-xl p-10 text-center bg-slate-50 hover:bg-slate-100/50 transition-colors cursor-pointer">
@@ -225,21 +225,21 @@
 
         // Base interna de datos general de clientes
         const baseClientes = {
-            "9999999999999": { nombre: "CONSUMIDOR FINAL", direccion: "Av. Principal Ecuador", email: "consumidor@kiosco.com" },
-            "0999999999001": { nombre: "ANUAR SISTEMAS", direccion: "Urdesa Central", email: "info@anuarsistemas.com" },
-            "0921548763001": { nombre: "FERRETERÍA EL CLAVO", direccion: "Av. Juan Tanca Marengo, Guayaquil", email: "compras@elclavo.com" },
+            "9999999999999": { nombre: "CONSUMIDOR FINAL", direccion: "Av. Principal Ecuador", email: "consumidor@eglobal.com" },
+            "0999999999001": { nombre: "ANUAR PROYECTOS", direccion: "Urdesa Central", email: "info@anuarproyectos.com" },
+            "0921548763001": { nombre: "DISTRIBUIDORA NORTE S.A.", direccion: "Av. Juan Tanca Marengo, Guayaquil", email: "compras@distribuidora.com" },
             "0918457261": { nombre: "CARLOS ALBERTO MENDOZA", direccion: "Alborada 4ta Etapa", email: "carlos.mendoza@gmail.com" },
             "1792456182001": { nombre: "CONSTRUCTORA PACÍFICO S.A.", direccion: "Via a la Costa Km 11.5", email: "proyectos@cpacifico.com" }
         };
 
-        // Base interna de productos
+        // Base interna de productos multipropósito
         const baseProductos = {
-            "1234": { detalle: "Perno Hexagonal de Acero 1/2", precio: 0.45, iva: true },
-            "78610001": { detalle: "Disco de Corte Amoladora Bosch", precio: 2.25, iva: true },
-            "5566": { detalle: "Martillo de Uña de Goma", precio: 8.50, iva: false },
-            "2021": { detalle: "Cinta Métrica Métrica Stanley 5m", precio: 4.80, iva: true },
-            "2022": { detalle: "Destornillador Imantado Phillips", precio: 3.10, iva: true },
-            "2023": { detalle: "Tacos Fischer de Expansión 8mm (x100)", precio: 5.50, iva: false }
+            "1234": { detalle: "Artículo Comercial Estándar Mod A", precio: 1.50, iva: true },
+            "78610001": { detalle: "Item Tecnológico Importado Premium", precio: 25.00, iva: true },
+            "5566": { detalle: "Kit Logístico de Suministros G1", precio: 8.50, iva: false },
+            "2021": { detalle: "Unidad Operativa de Consumo Tipo B", precio: 4.80, iva: true },
+            "2022": { detalle: "Herramienta Técnica Industrial H3", precio: 12.10, iva: true },
+            "2023": { detalle: "Paquete de Empaque Reforzado (x100)", precio: 5.50, iva: false }
         };
 
         let carrito = [];
@@ -248,7 +248,7 @@
             document.getElementById('cliente-id').value = "9999999999999";
             document.getElementById('cliente-nombre').value = "CONSUMIDOR FINAL";
             document.getElementById('cliente-dir').value = "Av. Principal Ecuador";
-            document.getElementById('cliente-email').value = "consumidor@kiosco.com";
+            document.getElementById('cliente-email').value = "consumidor@eglobal.com";
             cargarCatalogoUI();
             cargarClientesUI();
         });
