@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tienda EGlobal - Sistema Integral v10.7</title>
+    <title>Tienda EGlobal - Sistema Integral v10.9</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -35,7 +35,7 @@
     </header>
 
     <nav class="max-w-7xl mx-auto px-6 mt-6">
-        <div class="flex p-1 bg-slate-200/80 rounded-xl space-x-1 max-w-3xl overflow-x-auto">
+        <div class="flex p-1 bg-slate-200/80 rounded-xl space-x-1 max-w-2xl overflow-x-auto">
             <button id="tab-caja" onclick="cambiarPestana('caja')" class="flex-1 bg-slate-900 text-white py-2.5 rounded-lg font-bold text-xs flex items-center justify-center space-x-2 shadow-sm transition-all min-w-[120px]">
                 <i data-lucide="calculator" class="w-4 h-4"></i>
                 <span>Caja de Ventas</span>
@@ -47,10 +47,6 @@
             <button id="tab-clientes" onclick="cambiarPestana('clientes')" class="flex-1 text-slate-600 hover:text-slate-900 py-2.5 rounded-lg font-semibold text-xs flex items-center justify-center space-x-2 transition-all min-w-[120px]">
                 <i data-lucide="users" class="w-4 h-4"></i>
                 <span>Clientes</span>
-            </button>
-            <button id="tab-db" onclick="cambiarPestana('db')" class="flex-1 text-slate-600 hover:text-slate-900 py-2.5 rounded-lg font-semibold text-xs flex items-center justify-center space-x-2 transition-all min-w-[120px]">
-                <i data-lucide="database" class="w-4 h-4"></i>
-                <span>Carga Masiva (DB)</span>
             </button>
         </div>
     </nav>
@@ -118,15 +114,15 @@
                         </div>
                         <div>
                             <label class="block text-slate-400 mb-1 font-mono uppercase text-[10px]">Nombre / Razón Social</label>
-                            <input type="text" id="cliente-nombre" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                            <input type="text" id="cliente-nombre" oninput="actualizarMemoriaCliente()" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
                         </div>
                         <div>
                             <label class="block text-slate-400 mb-1 font-mono uppercase text-[10px]">Dirección</label>
-                            <input type="text" id="cliente-dir" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                            <input type="text" id="cliente-dir" oninput="actualizarMemoriaCliente()" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
                         </div>
                         <div>
                             <label class="block text-slate-400 mb-1 font-mono uppercase text-[10px]">Correo Electrónico</label>
-                            <input type="email" id="cliente-email" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-mono transition-all">
+                            <input type="email" id="cliente-email" oninput="actualizarMemoriaCliente()" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-mono transition-all">
                         </div>
                     </div>
                 </div>
@@ -158,23 +154,61 @@
             </div>
         </div>
 
-        <div id="view-catalogo" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-            <div class="flex items-center space-x-2 pb-3 border-b border-slate-100">
-                <i data-lucide="layers" class="text-blue-600 w-5 h-5"></i>
-                <h3 class="font-bold text-sm text-slate-700">Catálogo Operativo de Artículos</h3>
-            </div>
-            <div class="overflow-x-auto rounded-xl border border-slate-100">
-                <table class="w-full text-left text-xs">
-                    <thead>
-                        <tr class="bg-slate-50 text-slate-500 uppercase border-b border-slate-200 font-mono text-[10px]">
-                            <th class="py-3 px-4">Código</th>
-                            <th class="py-3 px-4">Descripción del Artículo</th>
-                            <th class="py-3 px-4 text-right">Precio Base</th>
-                            <th class="py-3 px-4 text-center">Impuesto (IVA)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabla-catalogo-items" class="divide-y divide-slate-100 font-medium text-slate-700"></table>
+        <div id="view-catalogo" class="hidden space-y-6">
+            
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex items-center space-x-2 pb-3 border-b border-slate-100 mb-4">
+                    <i data-lucide="database" class="text-blue-600 w-5 h-5"></i>
+                    <h3 class="font-bold text-sm text-slate-800">Consola de Actualización Masiva (ANUAR PROYECTOS)</h3>
                 </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                    <div class="md:col-span-4 space-y-1">
+                        <label class="block text-slate-400 font-mono uppercase text-[10px] font-bold">Alcance del Cambio</label>
+                        <select id="masivo-categoria" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:bg-white outline-none">
+                            <option value="TODOS">-- TODO EL CATÁLOGO --</option>
+                            <option value="Tecnología">Tecnología</option>
+                            <option value="Suministros">Suministros</option>
+                            <option value="General">General</option>
+                        </select>
+                    </div>
+
+                    <div class="md:col-span-4 space-y-1">
+                        <label class="block text-slate-400 font-mono uppercase text-[10px] font-bold">Porcentaje de Ajuste (Ej: 10 o -5)</label>
+                        <div class="relative flex items-center">
+                            <span class="absolute left-3 text-xs font-bold text-slate-400">%</span>
+                            <input type="number" id="masivo-porcentaje" placeholder="10" class="w-full pl-8 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-bold focus:bg-white outline-none">
+                        </div>
+                    </div>
+
+                    <div class="md:col-span-4 pt-4 md:pt-0">
+                        <button onclick="ejecutarAjusteMasivo()" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-3 px-4 rounded-xl transition-all uppercase tracking-wide flex items-center justify-center space-x-2 shadow-sm">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                            <span>Procesar Cambio Masivo</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                <div class="flex items-center space-x-2 pb-3 border-b border-slate-100">
+                    <i data-lucide="layers" class="text-blue-600 w-5 h-5"></i>
+                    <h3 class="font-bold text-sm text-slate-700">Catálogo Operativo de Artículos</h3>
+                </div>
+                <div class="overflow-x-auto rounded-xl border border-slate-100">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-500 uppercase border-b border-slate-200 font-mono text-[10px]">
+                                <th class="py-3 px-4">Código</th>
+                                <th class="py-3 px-4">Categoría</th>
+                                <th class="py-3 px-4">Descripción del Artículo</th>
+                                <th class="py-3 px-4 text-right">Precio Base</th>
+                                <th class="py-3 px-4 text-center">Impuesto (IVA)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-catalogo-items" class="divide-y divide-slate-100 font-medium text-slate-700"></table>
+                    </div>
+            </div>
         </div>
 
         <div id="view-clientes" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
@@ -196,17 +230,6 @@
                 </div>
         </div>
 
-        <div id="view-db" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-            <div class="flex items-center space-x-2 pb-3 border-b border-slate-100">
-                <i data-lucide="database" class="text-blue-600 w-5 h-5"></i>
-                <h3 class="font-bold text-sm text-slate-700">Sincronización de Datos (ANUAR PROYECTOS)</h3>
-            </div>
-            <div class="border-2 border-dashed border-slate-300 rounded-xl p-10 text-center bg-slate-50 cursor-pointer">
-                <i data-lucide="file-spreadsheet" class="w-10 h-10 text-slate-400 mx-auto mb-2"></i>
-                <p class="text-xs font-bold text-slate-600">Suelte el archivo estructurado para actualizar la base de datos local</p>
-            </div>
-        </div>
-
     </main>
 
     <script>
@@ -219,9 +242,12 @@
             "0967482498": { nombre: "CONSUMIDOR FINAL", direccion: "Av. Principal Ecuador", email: "consumidor@eglobal.com" }
         };
 
+        // Base de productos expandida con la llave obligatoria de "categoria"
         const baseProductos = {
-            "1234": { detalle: "Artículo Comercial Estándar Mod A", precio: 2.50, iva: true },
-            "2021": { detalle: "Unidad Operativa de Consumo Tipo B", precio: 4.80, iva: true }
+            "1234": { detalle: "Artículo Comercial Estándar Mod A", precio: 2.50, iva: true, categoria: "General" },
+            "2021": { detalle: "Unidad Operativa de Consumo Tipo B", precio: 4.80, iva: true, categoria: "Suministros" },
+            "7890": { detalle: "Router de Datos Corporativo R2", precio: 85.00, iva: true, categoria: "Tecnología" },
+            "5566": { detalle: "Cables Estructurales Cat6 (Metro)", precio: 0.75, iva: false, categoria: "Tecnología" }
         };
 
         let carrito = [];
@@ -237,7 +263,7 @@
         });
 
         function cambiarPestana(idVista) {
-            ['caja', 'catalogo', 'clientes', 'db'].forEach(v => {
+            ['caja', 'catalogo', 'clientes'].forEach(v => {
                 document.getElementById(`view-${v}`).classList.toggle('hidden', v !== idVista);
                 document.getElementById(`tab-${v}`).className = v === idVista 
                     ? "flex-1 bg-slate-900 text-white py-2.5 rounded-lg font-bold text-xs flex items-center justify-center space-x-2 shadow-sm transition-all min-w-[120px]"
@@ -245,13 +271,13 @@
             });
         }
 
-        // CORRECCIÓN DIRECTA: Vacía y habilita el formulario si el cliente no existe
         function detectarCliente(event) {
             if (event.key === 'Enter') {
                 event.preventDefault();
                 const rucCedula = event.target.value.trim();
+                if (!rucCedula) return;
+
                 const match = baseClientes[rucCedula];
-                
                 const inputNombre = document.getElementById('cliente-nombre');
                 const inputDir = document.getElementById('cliente-dir');
                 const inputEmail = document.getElementById('cliente-email');
@@ -261,15 +287,55 @@
                     inputDir.value = match.direccion;
                     inputEmail.value = match.email;
                 } else {
-                    // Forzar vaciado inmediato de strings en el DOM
                     inputNombre.value = "";
                     inputDir.value = "";
                     inputEmail.value = "";
-                    
-                    // Asegurar foco para tipeo rápido del operador
+                    baseClientes[rucCedula] = { nombre: "", direccion: "", email: "" };
+                    cargarClientesUI();
                     inputNombre.focus();
                 }
             }
+        }
+
+        function actualizarMemoriaCliente() {
+            const rucCedula = document.getElementById('cliente-id').value.trim();
+            if (!rucCedula) return;
+
+            baseClientes[rucCedula] = {
+                nombre: document.getElementById('cliente-nombre').value,
+                direccion: document.getElementById('cliente-dir').value,
+                email: document.getElementById('cliente-email').value
+            };
+            cargarClientesUI();
+        }
+
+        // LÓGICA DE AJUSTE DE PRECIO MASIVO POR CATEGORÍA
+        function ejecutarAjusteMasivo() {
+            const categoriaSeleccionada = document.getElementById('masivo-categoria').value;
+            const porcentajeInput = document.getElementById('masivo-porcentaje').value;
+            
+            const factor = parseFloat(porcentajeInput);
+            if (isNaN(factor) || factor === 0) {
+                alert("Por favor ingrese un porcentaje válido diferente de cero.");
+                return;
+            }
+
+            let modificados = 0;
+            const multiplicador = 1 + (factor / 100);
+
+            Object.keys(baseProductos).forEach(cod => {
+                const prod = baseProductos[cod];
+                if (categoriaSeleccionada === "TODOS" || prod.categoria === categoriaSeleccionada) {
+                    prod.precio = parseFloat((prod.precio * multiplicador).toFixed(4));
+                    modificados++;
+                }
+            });
+
+            // Refrescar las visualizaciones e interfaces operativas afectadas
+            cargarCatalogoUI();
+            renderizarTablaFactura(); 
+            document.getElementById('masivo-porcentaje').value = "";
+            alert(`Ajuste completado con éxito. Se actualizaron ${modificados} artículos de la categoría [${categoriaSeleccionada}].`);
         }
 
         function detectarTeclado(event) {
@@ -313,14 +379,17 @@
             let totalIva = 0;
 
             carrito.forEach(item => {
+                // Sincronizar el precio dinámicamente si cambió en el catálogo masivo
+                if (baseProductos[item.codigo]) {
+                    item.precio = baseProductos[item.codigo].precio;
+                }
+                
                 const precioNum = parseFloat(item.precio) || 0;
                 const cantNum = parseInt(item.cantidad) || 0;
                 const totalLinea = precioNum * cantNum;
                 
                 subtotal += totalLinea;
-                if (item.iva) {
-                    totalIva += totalLinea * 0.15;
-                }
+                if (item.iva) totalIva += totalLinea * 0.15;
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 border-b border-slate-100 transition-colors">
@@ -339,11 +408,9 @@
         function calcularTotales(subtotal, iva) {
             const s = parseFloat(subtotal) || 0;
             const i = parseFloat(iva) || 0;
-            const total = s + i;
-            
             document.getElementById('txt-subtotal').innerText = `$${s.toFixed(2)}`;
             document.getElementById('txt-iva').innerText = `$${i.toFixed(2)}`;
-            document.getElementById('txt-total').innerText = `$${total.toFixed(2)}`;
+            document.getElementById('txt-total').innerText = `$${(s + i).toFixed(2)}`;
         }
 
         function cargarCatalogoUI() {
@@ -354,12 +421,14 @@
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition-colors">
                         <td class="py-3 px-4 font-mono font-bold text-slate-500">${cod}</td>
+                        <td class="py-3 px-4 text-[11px] font-bold text-blue-600"><span class="bg-blue-50 px-2 py-1 rounded">${p.categoria}</span></td>
                         <td class="py-3 px-4 text-slate-900 font-semibold">${p.detalle}</td>
-                        <td class="py-3 px-4 text-right text-slate-900 font-bold">$${parseFloat(p.precio).toFixed(2)}</td>
+                        <td class="py-3 px-4 text-right text-slate-900 font-black">$${parseFloat(p.precio).toFixed(2)}</td>
                         <td class="py-3 px-4 text-center">${p.iva ? '<span class="text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded text-[10px] font-bold">15% IVA</span>' : '<span class="text-slate-400 bg-slate-50 px-2.5 py-0.5 rounded text-[10px]">0% IVA</span>'}</td>
                     </tr>
                 `;
             });
+            lucide.createIcons();
         }
 
         function cargarClientesUI() {
@@ -370,9 +439,9 @@
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition-colors">
                         <td class="py-3 px-4 font-mono font-bold text-slate-600">${id}</td>
-                        <td class="py-3 px-4 text-slate-900 font-bold">${c.nombre}</td>
-                        <td class="py-3 px-4 text-slate-500">${c.direccion}</td>
-                        <td class="py-3 px-4 font-mono text-xs text-blue-600">${c.email}</td>
+                        <td class="py-3 px-4 text-slate-900 font-bold">${c.nombre || '<i class="text-slate-400">Sin Nombre</i>'}</td>
+                        <td class="py-3 px-4 text-slate-500">${c.direccion || '<i class="text-slate-400">Sin Dirección</i>'}</td>
+                        <td class="py-3 px-4 font-mono text-xs text-blue-600">${c.email || '<i class="text-slate-400">Sin Email</i>'}</td>
                     </tr>
                 `;
             });
