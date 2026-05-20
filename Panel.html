@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Centro Ferretero Bacilio - Sistema Integral v10.3</title>
+    <title>Centro Ferretero Bacilio - Sistema Integral v10.4</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -20,7 +20,7 @@
     <div id="barra-notificacion-cambios" class="bg-amber-500 text-slate-950 px-6 py-2.5 text-xs font-bold border-b border-amber-600 shadow-sm flex items-center justify-between">
         <div class="flex items-center space-x-2">
             <i data-lucide="info" class="w-4 h-4 text-slate-900 shrink-0"></i>
-            <span>🛠️ CAMBIOS EN ESTA VERSIÓN: Se añadió la pestaña "Clientes" con 3 registros de prueba y se agregaron 3 nuevos productos de ejemplo al catálogo operativo de la ferretería.</span>
+            <span>🛠️ VERSIÓN 10.4 CORREGIDA: Se solventó el cálculo de totales ($NaN) y se garantizó la limpieza inmediata y absoluta de los campos de facturación si la cédula/RUC ingresada no existe en la base.</span>
         </div>
         <button onclick="document.getElementById('barra-notificacion-cambios').remove()" class="bg-amber-600/30 hover:bg-amber-600/50 text-slate-900 px-2 py-1 rounded font-mono text-[10px] transition-colors ml-4">
             [Cerrar Aviso]
@@ -223,7 +223,7 @@
     <script>
         lucide.createIcons();
 
-        // Base interna de datos ampliada con los 3 nuevos clientes solicitados
+        // Base interna de datos general de clientes
         const baseClientes = {
             "9999999999999": { nombre: "CONSUMIDOR FINAL", direccion: "Av. Principal Ecuador", email: "consumidor@kiosco.com" },
             "0999999999001": { nombre: "ANUAR SISTEMAS", direccion: "Urdesa Central", email: "info@anuarsistemas.com" },
@@ -232,7 +232,7 @@
             "1792456182001": { nombre: "CONSTRUCTORA PACÍFICO S.A.", direccion: "Via a la Costa Km 11.5", email: "proyectos@cpacifico.com" }
         };
 
-        // Base interna de productos ampliada con los 3 nuevos productos de ejemplo solicitados
+        // Base interna de productos
         const baseProductos = {
             "1234": { detalle: "Perno Hexagonal de Acero 1/2", precio: 0.45, iva: true },
             "78610001": { detalle: "Disco de Corte Amoladora Bosch", precio: 2.25, iva: true },
@@ -253,7 +253,7 @@
             cargarClientesUI();
         });
 
-        // CONTROL MULTI-PESTAÑA EXTENDIDO
+        // CONTROL MULTI-PESTAÑA
         function cambiarPestana(idVista) {
             const vistas = ['caja', 'catalogo', 'clientes', 'db'];
             
@@ -271,6 +271,7 @@
             });
         }
 
+        // DETECTAR CLIENTE (CORREGIDO CON LIMPIEZA ABSOLUTA)
         function detectarCliente(event) {
             if (event.key === 'Enter') {
                 event.preventDefault();
@@ -286,17 +287,20 @@
                     inputDir.value = baseClientes[rucCedula].direccion;
                     inputEmail.value = baseClientes[rucCedula].email;
                 } else {
+                    // Forzar vaciado inmediato de valores en el DOM
                     inputNombre.value = "";
                     inputDir.value = "";
                     inputEmail.value = "";
-                    inputNombre.removeAttribute('value');
-                    inputDir.removeAttribute('value');
-                    inputEmail.removeAttribute('value');
+                    // Forzar limpieza de atributos del elemento por seguridad
+                    inputNombre.setAttribute('value', '');
+                    inputDir.setAttribute('value', '');
+                    inputEmail.setAttribute('value', '');
                     inputNombre.focus();
                 }
             }
         }
 
+        // DETECTAR ARTÍCULO (CORREGIDO: cantidad asignada correctamente)
         function detectarTeclado(event) {
             if (event.key === 'Enter') {
                 event.preventDefault();
@@ -311,7 +315,7 @@
                         existente.cantidad++;
                     } else {
                         if (conocido) {
-                            carrito.push({ codigo, ...conocido, Math: 1 });
+                            carrito.push({ codigo, ...conocido, cantidad: 1 });
                         } else {
                             carrito.push({ codigo, detalle: "Artículo General #" + codigo, precio: 1.00, iva: true, cantidad: 1 });
                         }
