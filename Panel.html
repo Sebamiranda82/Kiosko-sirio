@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Centro Ferretero Bacilio - Sistema Integral v10.2</title>
+    <title>Centro Ferretero Bacilio - Sistema Integral v10.3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -20,7 +20,7 @@
     <div id="barra-notificacion-cambios" class="bg-amber-500 text-slate-950 px-6 py-2.5 text-xs font-bold border-b border-amber-600 shadow-sm flex items-center justify-between">
         <div class="flex items-center space-x-2">
             <i data-lucide="info" class="w-4 h-4 text-slate-900 shrink-0"></i>
-            <span>🛠️ CAMBIOS EN ESTA VERSIÓN: Se corrigieron las 3 pestañas originales del menú superior, se eliminaron los alerts al agregar productos y se blindó la limpieza estricta de campos al ingresar cédulas no existentes.</span>
+            <span>🛠️ CAMBIOS EN ESTA VERSIÓN: Se añadió la pestaña "Clientes" con 3 registros de prueba y se agregaron 3 nuevos productos de ejemplo al catálogo operativo de la ferretería.</span>
         </div>
         <button onclick="document.getElementById('barra-notificacion-cambios').remove()" class="bg-amber-600/30 hover:bg-amber-600/50 text-slate-900 px-2 py-1 rounded font-mono text-[10px] transition-colors ml-4">
             [Cerrar Aviso]
@@ -45,16 +45,20 @@
     </header>
 
     <nav class="max-w-7xl mx-auto px-6 mt-6">
-        <div class="flex p-1 bg-slate-200/80 rounded-xl space-x-1 max-w-2xl">
-            <button id="tab-caja" onclick="cambiarPestana('caja')" class="flex-1 bg-slate-900 text-white py-2.5 rounded-lg font-bold text-xs flex items-center justify-center space-x-2 shadow-sm transition-all">
+        <div class="flex p-1 bg-slate-200/80 rounded-xl space-x-1 max-w-3xl overflow-x-auto">
+            <button id="tab-caja" onclick="cambiarPestana('caja')" class="flex-1 bg-slate-900 text-white py-2.5 rounded-lg font-bold text-xs flex items-center justify-center space-x-2 shadow-sm transition-all min-w-[120px]">
                 <i data-lucide="calculator" class="w-4 h-4"></i>
                 <span>Caja de Ventas</span>
             </button>
-            <button id="tab-catalogo" onclick="cambiarPestana('catalogo')" class="flex-1 text-slate-600 hover:text-slate-900 py-2.5 rounded-lg font-semibold text-xs flex items-center justify-center space-x-2 transition-all">
+            <button id="tab-catalogo" onclick="cambiarPestana('catalogo')" class="flex-1 text-slate-600 hover:text-slate-900 py-2.5 rounded-lg font-semibold text-xs flex items-center justify-center space-x-2 transition-all min-w-[120px]">
                 <i data-lucide="layers" class="w-4 h-4"></i>
                 <span>Catálogo de Precios</span>
             </button>
-            <button id="tab-db" onclick="cambiarPestana('db')" class="flex-1 text-slate-600 hover:text-slate-900 py-2.5 rounded-lg font-semibold text-xs flex items-center justify-center space-x-2 transition-all">
+            <button id="tab-clientes" onclick="cambiarPestana('clientes')" class="flex-1 text-slate-600 hover:text-slate-900 py-2.5 rounded-lg font-semibold text-xs flex items-center justify-center space-x-2 transition-all min-w-[120px]">
+                <i data-lucide="users" class="w-4 h-4"></i>
+                <span>Clientes</span>
+            </button>
+            <button id="tab-db" onclick="cambiarPestana('db')" class="flex-1 text-slate-600 hover:text-slate-900 py-2.5 rounded-lg font-semibold text-xs flex items-center justify-center space-x-2 transition-all min-w-[120px]">
                 <i data-lucide="database" class="w-4 h-4"></i>
                 <span>Carga Masiva (DB)</span>
             </button>
@@ -64,7 +68,6 @@
     <main class="max-w-7xl mx-auto px-6 py-6">
 
         <div id="view-caja" class="space-y-6">
-            
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 <div class="lg:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
                     <div>
@@ -159,7 +162,6 @@
                     </button>
                 </div>
             </div>
-
         </div>
 
         <div id="view-catalogo" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
@@ -183,6 +185,27 @@
             </div>
         </div>
 
+        <div id="view-clientes" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+            <div class="flex items-center space-x-2 pb-3 border-b border-slate-100">
+                <i data-lucide="users" class="text-blue-600 w-5 h-5"></i>
+                <h3 class="font-bold text-sm text-slate-700">Directorio General de Clientes</h3>
+            </div>
+            <div class="overflow-x-auto rounded-xl border border-slate-100">
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-500 uppercase border-b border-slate-200 font-mono text-[10px]">
+                            <th class="py-3 px-4">RUC / Cédula</th>
+                            <th class="py-3 px-4">Razón Social / Nombre</th>
+                            <th class="py-3 px-4">Dirección Comercial</th>
+                            <th class="py-3 px-4">Correo Electrónico</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-clientes-items" class="divide-y divide-slate-100 font-medium text-slate-700">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
         <div id="view-db" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
             <div class="flex items-center space-x-2 pb-3 border-b border-slate-100">
                 <i data-lucide="database" class="text-blue-600 w-5 h-5"></i>
@@ -200,16 +223,23 @@
     <script>
         lucide.createIcons();
 
-        // Base interna estricta de datos
+        // Base interna de datos ampliada con los 3 nuevos clientes solicitados
         const baseClientes = {
             "9999999999999": { nombre: "CONSUMIDOR FINAL", direccion: "Av. Principal Ecuador", email: "consumidor@kiosco.com" },
-            "0999999999001": { nombre: "ANUAR SISTEMAS", direccion: "Urdesa Central", email: "info@anuarsistemas.com" }
+            "0999999999001": { nombre: "ANUAR SISTEMAS", direccion: "Urdesa Central", email: "info@anuarsistemas.com" },
+            "0921548763001": { nombre: "FERRETERÍA EL CLAVO", direccion: "Av. Juan Tanca Marengo, Guayaquil", email: "compras@elclavo.com" },
+            "0918457261": { nombre: "CARLOS ALBERTO MENDOZA", direccion: "Alborada 4ta Etapa", email: "carlos.mendoza@gmail.com" },
+            "1792456182001": { nombre: "CONSTRUCTORA PACÍFICO S.A.", direccion: "Via a la Costa Km 11.5", email: "proyectos@cpacifico.com" }
         };
 
+        // Base interna de productos ampliada con los 3 nuevos productos de ejemplo solicitados
         const baseProductos = {
             "1234": { detalle: "Perno Hexagonal de Acero 1/2", precio: 0.45, iva: true },
             "78610001": { detalle: "Disco de Corte Amoladora Bosch", precio: 2.25, iva: true },
-            "5566": { detalle: "Martillo de Uña de Goma", precio: 8.50, iva: false }
+            "5566": { detalle: "Martillo de Uña de Goma", precio: 8.50, iva: false },
+            "2021": { detalle: "Cinta Métrica Métrica Stanley 5m", precio: 4.80, iva: true },
+            "2022": { detalle: "Destornillador Imantado Phillips", precio: 3.10, iva: true },
+            "2023": { detalle: "Tacos Fischer de Expansión 8mm (x100)", precio: 5.50, iva: false }
         };
 
         let carrito = [];
@@ -220,27 +250,23 @@
             document.getElementById('cliente-dir').value = "Av. Principal Ecuador";
             document.getElementById('cliente-email').value = "consumidor@kiosco.com";
             cargarCatalogoUI();
+            cargarClientesUI();
         });
 
+        // CONTROL MULTI-PESTAÑA EXTENDIDO
         function cambiarPestana(idVista) {
-            const views = {
-                'caja': document.getElementById('view-caja'),
-                'catalogo': document.getElementById('view-catalogo'),
-                'db': document.getElementById('view-db')
-            };
-            const tabs = {
-                'caja': document.getElementById('tab-caja'),
-                'catalogo': document.getElementById('tab-catalogo'),
-                'db': document.getElementById('tab-db')
-            };
-
-            Object.keys(views).forEach(key => {
-                if (key === idVista) {
-                    views[key].classList.remove('hidden');
-                    tabs[key].className = "flex-1 bg-slate-900 text-white py-2.5 rounded-lg font-bold text-xs flex items-center justify-center space-x-2 shadow-sm transition-all";
+            const vistas = ['caja', 'catalogo', 'clientes', 'db'];
+            
+            vistas.forEach(v => {
+                const elVista = document.getElementById(`view-${v}`);
+                const elTab = document.getElementById(`tab-${v}`);
+                
+                if (v === idVista) {
+                    elVista.classList.remove('hidden');
+                    elTab.className = "flex-1 bg-slate-900 text-white py-2.5 rounded-lg font-bold text-xs flex items-center justify-center space-x-2 shadow-sm transition-all min-w-[120px]";
                 } else {
-                    views[key].classList.add('hidden');
-                    tabs[key].className = "flex-1 text-slate-600 hover:text-slate-900 py-2.5 rounded-lg font-semibold text-xs flex items-center justify-center space-x-2 transition-all";
+                    elVista.classList.add('hidden');
+                    elTab.className = "flex-1 text-slate-600 hover:text-slate-900 py-2.5 rounded-lg font-semibold text-xs flex items-center justify-center space-x-2 transition-all min-w-[120px]";
                 }
             });
         }
@@ -285,7 +311,7 @@
                         existente.cantidad++;
                     } else {
                         if (conocido) {
-                            carrito.push({ codigo, ...conocido, cantidad: 1 });
+                            carrito.push({ codigo, ...conocido, Math: 1 });
                         } else {
                             carrito.push({ codigo, detalle: "Artículo General #" + codigo, precio: 1.00, iva: true, cantidad: 1 });
                         }
@@ -348,6 +374,22 @@
                         <td class="py-3 px-4 text-slate-900 font-semibold">${p.detalle}</td>
                         <td class="py-3 px-4 text-right text-slate-900 font-bold">$${p.precio.toFixed(2)}</td>
                         <td class="py-3 px-4 text-center">${p.iva ? '<span class="text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded text-[10px] font-bold">15% IVA</span>' : '<span class="text-slate-400 bg-slate-50 px-2.5 py-0.5 rounded text-[10px]">0% IVA</span>'}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function cargarClientesUI() {
+            const tbody = document.getElementById('tabla-clientes-items');
+            tbody.innerHTML = "";
+            Object.keys(baseClientes).forEach(id => {
+                const c = baseClientes[id];
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-3 px-4 font-mono font-bold text-slate-600">${id}</td>
+                        <td class="py-3 px-4 text-slate-900 font-bold">${c.nombre}</td>
+                        <td class="py-3 px-4 text-slate-500">${c.direccion}</td>
+                        <td class="py-3 px-4 font-mono text-xs text-blue-600">${c.email}</td>
                     </tr>
                 `;
             });
