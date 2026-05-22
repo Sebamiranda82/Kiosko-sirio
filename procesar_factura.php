@@ -148,3 +148,77 @@ function calcularModulo11($cadena) {
     if ($digito == 10) $digito = 1;
     return $digito;
 }
+// =========================================================================
+// AGREGAR ESTO AL FINAL DE TU ARCHIVO 'procesar_factura.php'
+// =========================================================================
+
+// Detectamos si el frontend está solicitando una acción específica mediante la URL
+$action = $_GET['action'] ?? '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($action)) {
+    
+    // Aquí debes asegurarte de incluir tu conexión a la base de datos ($db o $pdo)
+    // Si ya tienes la conexión definida arriba en este archivo, puedes usar esa misma variable.
+    
+    switch ($action) {
+        // ----------------------------------------
+        // ACCIÓN: ELIMINAR CLIENTE
+        // ----------------------------------------
+        case 'eliminar_cliente':
+            $data = json_decode(file_get_contents("php://input"), true);
+            $id_cliente = $data['id_cliente'] ?? '';
+
+            if (empty($id_cliente)) {
+                echo json_encode(["success" => false, "error" => "ID de cliente no proporcionado."]);
+                exit;
+            }
+
+            // Validar que no tenga facturas vinculadas (Ajusta 'facturas' si tu tabla se llama distinto)
+            $stmt = $db->prepare("SELECT COUNT(*) AS total FROM facturas WHERE id_cliente = :id");
+            $stmt->execute([':id' => $id_cliente]);
+            $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($resultado['total'] > 0) {
+                echo json_encode([
+                    "success" => false, 
+                    "error" => "No se puede eliminar el cliente porque tiene " . $resultado['total'] . " factura(s) registrada(s) a su nombre."
+                ]);
+            } else {
+                // Proceder al borrado seguro
+                $delete = $db->prepare("DELETE FROM clientes WHERE id = :id");
+                $delete->execute([':id' => $id_cliente]);
+                echo json_encode(["success" => true, "message" => "Cliente eliminado correctamente."]);
+            }
+            exit; // Detiene la ejecución para que no intente procesar una factura involuntariamente
+
+        // ----------------------------------------
+        // ACCIÓN: ELIMINAR PRODUCTO
+        // ----------------------------------------
+        case 'eliminar_producto':
+            $data = json_decode(file_get_contents("php://input"), true);
+            $codigo = $data['codigo'] ?? '';
+
+            if (empty($codigo)) {
+                echo json_encode(["success" => false, "error" => "Código de producto no proporcionado."]);
+                exit;
+            }
+
+            // Validar que el producto no esté en un detalle de venta (Ajusta 'detalle_facturas')
+            $stmt = $db->prepare("SELECT COUNT(*) AS total FROM detalle_facturas WHERE codigo_producto = :codigo");
+            $stmt->execute([':codigo' => $codigo]);
+            $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($resultado['total'] > 0) {
+                echo json_encode([
+                    "success" => false, 
+                    "error" => "No se puede eliminar el artículo. Está incluido en " . $resultado['total'] . " comprobante(s) de venta."
+                ]);
+            } else {
+                // Proceder al borrado seguro
+                $delete = $db->prepare("DELETE FROM productos WHERE codigo = :codigo");
+                $delete->execute([':codigo' => $codigo]);
+                echo json_encode(["success" => true, "message" => "Producto eliminado del catálogo."]);
+            }
+            exit;
+    }
+}
