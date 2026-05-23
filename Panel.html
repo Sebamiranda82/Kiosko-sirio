@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tienda EGlobal - Sistema Integral v11.5</title>
+    <title>Tienda EGlobal - Sistema Integral v11.6</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
-        /* Estilos de Impresión Optimizados para Ticket Térmico de 80mm o Guardado PDF */
         @media print {
             body * { visibility: hidden; }
             #area-impresion-ticket, #area-impresion-ticket * { visibility: visible; }
@@ -24,14 +23,16 @@
                 font-size: 12px;
                 color: #000;
             }
-            @page {
-                size: 80mm auto;
-                margin: 0;
-            }
+            @page { size: 80mm auto; margin: 0; }
         }
     </style>
 </head>
 <body class="bg-[#f8fafc] font-sans antialiased text-slate-800">
+
+    <div class="bg-blue-600 text-white text-center py-1.5 px-4 text-xs font-mono font-bold tracking-wide shadow-inner flex justify-center items-center space-x-2">
+        <span>🚀 COMPILACIÓN ACTIVA: SISTEMA INTEGRAL v11.6</span>
+        <span class="bg-white/20 px-2 py-0.5 rounded text-[10px]">CAMBIOS: BOTÓN ELIMINAR + ALERTAS DE RED SEGURAS</span>
+    </div>
 
     <header class="bg-gradient-to-r from-blue-900 to-slate-900 text-white shadow-md border-b border-blue-800/40">
         <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
@@ -325,8 +326,7 @@
             </div>
 
             <div class="bg-slate-100 p-4 rounded-xl overflow-y-auto flex-1 border border-slate-200 flex justify-center">
-                <div id="preview-ticket-modal" class="bg-white shadow-inner p-4 w-[72mm] font-mono text-[11px] text-black leading-tight border border-slate-300">
-                    </div>
+                <div id="preview-ticket-modal" class="bg-white shadow-inner p-4 w-[72mm] font-mono text-[11px] text-black leading-tight border border-slate-300"></div>
             </div>
 
             <div class="grid grid-cols-2 gap-3 pt-4 border-t border-slate-100 mt-4">
@@ -346,7 +346,6 @@
     <script>
         lucide.createIcons();
 
-        // Datos fiscales por defecto iniciales (Modificables en caliente desde la pestaña Mi Empresa)
         let datosEmpresa = {
             ruc: "0999999999001",
             razonSocial: "ANUAR SISTEMAS S.A.",
@@ -373,6 +372,7 @@
         };
 
         let carrito = [];
+        const URL_API_CLEVER = "https://app-d98e5dd8-3cba-4a2d-a39f-0fc6aeb7fc39.cleverapps.io/procesar_factura.php";
 
         window.addEventListener('DOMContentLoaded', () => {
             document.getElementById('cliente-id').value = "0967482498001";
@@ -380,9 +380,7 @@
             document.getElementById('cliente-dir').value = "Av. Principal Ecuador";
             document.getElementById('cliente-email').value = "consumidor@eglobal.com";
             
-            // Cargar los campos de configuración fiscal del negocio
             cargarFormularioEmpresaUI();
-            
             cargarCatalogoUI();
             cargarClientesUI();
             renderizarTablaFactura();
@@ -397,7 +395,6 @@
             });
         }
 
-        // Carga los valores actuales en los inputs correspondientes de "Mi Empresa"
         function cargarFormularioEmpresaUI() {
             document.getElementById('empresa-ruc').value = datosEmpresa.ruc;
             document.getElementById('empresa-razon-social').value = datosEmpresa.razonSocial;
@@ -407,12 +404,9 @@
             document.getElementById('empresa-establecimiento').value = datosEmpresa.establecimiento;
             document.getElementById('empresa-punto').value = datosEmpresa.puntoEmision;
             document.getElementById('empresa-regimen').value = datosEmpresa.regimen;
-            
-            // Sincronizar dinámicamente el título visual del header principal
             document.getElementById('header-nombre-empresa').innerText = datosEmpresa.nombreComercial;
         }
 
-        // Salva los cambios hechos por el dueño de la app
         function guardarDatosEmpresa() {
             datosEmpresa.ruc = document.getElementById('empresa-ruc').value.trim();
             datosEmpresa.razonSocial = document.getElementById('empresa-razon-social').value.trim();
@@ -422,9 +416,8 @@
             datosEmpresa.establecimiento = document.getElementById('empresa-establecimiento').value.trim();
             datosEmpresa.puntoEmision = document.getElementById('empresa-punto').value.trim();
             datosEmpresa.regimen = document.getElementById('empresa-regimen').value;
-
             document.getElementById('header-nombre-empresa').innerText = datosEmpresa.nombreComercial;
-            alert("Parámetros fiscales actualizados correctamente para el SRI.");
+            alert("Parámetros fiscales actualizados correctamente.");
         }
 
         function detectarCliente(event) {
@@ -468,8 +461,8 @@
         function ejecutarAjusteMasivo() {
             const categoriaSeleccionada = document.getElementById('masivo-categoria').value;
             const porcentajeInput = document.getElementById('masivo-porcentaje').value;
-            
             const factor = parseFloat(porcentajeInput);
+            
             if (isNaN(factor) || factor === 0) {
                 alert("Por favor ingrese un porcentaje válido.");
                 return;
@@ -580,12 +573,10 @@
                 document.getElementById('ticket-vacio').style.display = 'none';
             }
 
-            carrito.forEach((item, index) => {
+            carrito.forEach((item) => {
                 const totalItem = item.precio * item.cantidad;
                 subtotal += totalItem;
-                if (item.iva) {
-                    iva += totalItem * 0.15;
-                }
+                if (item.iva) iva += totalItem * 0.15;
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -609,10 +600,75 @@
             renderizarTablaFactura();
         }
 
-        // =========================================================================
-        // LÓGICA DE ELIMINACIÓN CON VALIDACIÓN DE OPERACIONES EN EL BACKEND
-        // =========================================================================
-        const URL_API_CLEVER = "https://app-d98e5dd8-3cba-4a2d-a39f-0fc6aeb7fc39.cleverapps.io/procesar_factura.php";
+        // ENVIAR / GUARDAR FACTURA ORIGINAL COMPLETA
+        async function solicitarGuardadoVenta() {
+            if (carrito.length === 0) {
+                alert("El carrito está vacío.");
+                return;
+            }
+
+            const payload = {
+                cliente: {
+                    id: document.getElementById('cliente-id').value,
+                    nombre: document.getElementById('cliente-nombre').value,
+                    direccion: document.getElementById('cliente-dir').value,
+                    email: document.getElementById('cliente-email').value
+                },
+                empresa: datosEmpresa,
+                productos: carrito
+            };
+
+            try {
+                // Se envía sin parámetros URL para que ejecute tu lógica por defecto de guardado
+                const response = await fetch(URL_API_CLEVER, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error(`Status ${response.status}`);
+                
+                const res = await response.json();
+                if (res.status === 'success' || res.success) {
+                    alert("Venta guardada con éxito en el servidor.");
+                    limpiarTicket();
+                } else {
+                    alert("Error al guardar factura: " + (res.mensaje || "Desconocido"));
+                }
+            } catch (e) {
+                alert("Error de conexión al intentar guardar la venta: " + e.message);
+            }
+        }
+
+        // FUNCIONES DE BAJAS SEGURAS (PRODUCTOS Y CLIENTES)
+        async function confirmarEliminarProducto(codigoProducto, detalleProducto) {
+            const confirmar = confirm(`¿Estás seguro de que deseas eliminar el producto "${detalleProducto}"?`);
+            if (!confirmar) return;
+
+            try {
+                const response = await fetch(`${URL_API_CLEVER}?action=eliminar_producto`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ codigo: codigoProducto })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Código de error de red ${response.status}`);
+                }
+
+                const res = await response.json();
+
+                if (res && res.success) {
+                    delete baseProductos[codigoProducto];
+                    cargarCatalogoUI();
+                    alert(res.message || "Producto removido del catálogo.");
+                } else {
+                    alert(`⚠️ Operación rechazada: ${res.error || 'Respuesta inesperada del servidor.'}`);
+                }
+            } catch (error) {
+                alert(`Error de conexión: ${error.message}. Verifica que la API esté corriendo.`);
+            }
+        }
 
         async function confirmarEliminarCliente(idCliente, nombreCliente) {
             if (idCliente === "9999999999999") {
@@ -630,46 +686,24 @@
                     body: JSON.stringify({ id_cliente: idCliente })
                 });
 
+                if (!response.ok) throw new Error(`Código de red ${response.status}`);
+
                 const res = await response.json();
 
-                if (res.success) {
+                if (res && res.success) {
                     delete baseClientes[idCliente];
                     cargarClientesUI();
-                    alert(res.message);
+                    alert(res.message || "Cliente removido.");
                 } else {
-                    alert(`⚠️ Operación rechazada por el servidor: ${res.error}`);
+                    alert(`⚠️ Operación rechazada: ${res.error || 'Respuesta inesperada del servidor.'}`);
                 }
             } catch (error) {
-                console.error(error);
-                alert("Error de red. No se pudo comprobar el estado con el servidor de Clever Cloud.");
+                alert(`Error de conexión: ${error.message}`);
             }
         }
 
-        async function confirmarEliminarProducto(codigoProducto, detalleProducto) {
-            const confirmar = confirm(`¿Estás seguro de que deseas eliminar el producto "${detalleProducto}"?`);
-            if (!confirmar) return;
-
-            try {
-                const response = await fetch(`${URL_API_CLEVER}?action=eliminar_producto`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ codigo: codigoProducto })
-                });
-
-                const res = await response.json();
-
-                if (res.success) {
-                    delete baseProductos[codigoProducto];
-                    cargarCatalogoUI();
-                    alert(res.message);
-                } else {
-                    alert(`⚠️ Operación rechazada por el servidor: ${res.error}`);
-                }
-            } catch (error) {
-                console.error(error);
-                alert("Error de red. No se pudo comprobar el estado con el servidor de Clever Cloud.");
-            }
-        }
+        function cerrarModalImpresion() { document.getElementById('modal-impresion').classList.add('hidden'); }
+        function ejecutarImpresionNative() { window.print(); }
     </script>
 </body>
 </html>
