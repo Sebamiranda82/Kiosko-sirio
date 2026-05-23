@@ -97,7 +97,7 @@
                         <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
                             <h3 class="font-bold text-xs text-slate-500 uppercase tracking-wider">Detalle del Comprobante</h3>
                             <button onclick="limpiarTicket()" class="text-[11px] bg-slate-100 hover:bg-red-50 hover:text-red-600 px-2.5 py-1.5 rounded-lg font-medium transition-colors">
-                                Limpiar Todo
+                                 Limpiar Todo
                             </button>
                         </div>
                         <div class="overflow-x-auto max-h-[180px] overflow-y-auto">
@@ -220,9 +220,11 @@
                                 <th class="py-3 px-4">Descripción del Artículo</th>
                                 <th class="py-3 px-4 text-right">Precio Base</th>
                                 <th class="py-3 px-4 text-center">Impuesto (IVA)</th>
+                                <th class="py-3 px-4 text-center">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody id="tabla-catalogo-items" class="divide-y divide-slate-100 font-medium text-slate-700"></table>
+                        <tbody id="tabla-catalogo-items" class="divide-y divide-slate-100 font-medium text-slate-700"></tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -240,10 +242,12 @@
                             <th class="py-3 px-4">Razón Social / Nombre</th>
                             <th class="py-3 px-4">Dirección Comercial</th>
                             <th class="py-3 px-4">Correo Electrónico</th>
+                            <th class="py-3 px-4 text-center">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody id="tabla-clientes-items" class="divide-y divide-slate-100 font-medium text-slate-700"></table>
-                </div>
+                    <tbody id="tabla-clientes-items" class="divide-y divide-slate-100 font-medium text-slate-700"></tbody>
+                </table>
+            </div>
         </div>
 
         <div id="view-empresa" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
@@ -500,196 +504,172 @@
 
                     if (existente) {
                         existente.cantidad = parseInt(existente.cantidad) + 1;
+                    } else if (conocido) {
+                        carrito.push({
+                            codigo: codigo,
+                            detalle: conocido.detalle,
+                            precio: conocido.precio,
+                            iva: conocido.iva,
+                            cantidad: 1
+                        });
                     } else {
-                        if (conocido) {
-                            carrito.push({ codigo, detalle: conocido.detalle, precio: parseFloat(conocido.precio), iva: conocido.iva, cantidad: 1 });
-                        } else {
-                            carrito.push({ codigo, detalle: "Artículo General #" + codigo, precio: 1.00, iva: true, cantidad: 1 });
-                        }
+                        alert("Código no registrado en el catálogo.");
                     }
+                    input.value = "";
                     renderizarTablaFactura();
                 }
-                input.value = "";
             }
-        }
-
-        function renderizarTablaFactura() {
-            const tbody = document.getElementById('tabla-items');
-            const mensajeVacio = document.getElementById('ticket-vacio');
-            tbody.innerHTML = "";
-
-            if (carrito.length === 0) {
-                mensajeVacio.classList.remove('hidden');
-                calcularTotales(0, 0);
-                return;
-            }
-
-            mensajeVacio.classList.add('hidden');
-            let subtotal = 0;
-            let totalIva = 0;
-
-            carrito.forEach(item => {
-                if (baseProductos[item.codigo]) {
-                    item.precio = baseProductos[item.codigo].precio;
-                }
-                
-                const precioNum = parseFloat(item.precio) || 0;
-                const cantNum = parseInt(item.cantidad) || 0;
-                const totalLinea = precioNum * cantNum;
-                
-                subtotal += totalLinea;
-                if (item.iva) totalIva += totalLinea * 0.15;
-
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 border-b border-slate-100 transition-colors">
-                        <td class="py-2.5 px-3 font-mono text-slate-400 text-[11px]">${item.codigo}</td>
-                        <td class="py-2.5 px-3 text-slate-900 font-bold">${item.detalle}</td>
-                        <td class="py-2.5 px-3 text-center text-slate-800 font-bold">${cantNum}</td>
-                        <td class="py-2.5 px-3 text-right text-slate-500">$${precioNum.toFixed(2)}</td>
-                        <td class="py-2.5 px-3 text-right text-slate-900 font-black">$${totalLinea.toFixed(2)}</td>
-                    </tr>
-                `;
-            });
-
-            calcularTotales(subtotal, totalIva);
-        }
-
-        function calcularTotales(subtotal, iva) {
-            const s = parseFloat(subtotal) || 0;
-            const i = parseFloat(iva) || 0;
-            document.getElementById('txt-subtotal').innerText = `$${s.toFixed(2)}`;
-            document.getElementById('txt-iva').innerText = `$${i.toFixed(2)}`;
-            document.getElementById('txt-total').innerText = `$${(s + i).toFixed(2)}`;
         }
 
         function cargarCatalogoUI() {
             const tbody = document.getElementById('tabla-catalogo-items');
             tbody.innerHTML = "";
-            Object.keys(baseProductos).forEach(cod => {
-                const p = baseProductos[cod];
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition-colors">
-                        <td class="py-3 px-4 font-mono font-bold text-slate-500">${cod}</td>
-                        <td class="py-3 px-4 text-[11px] font-bold text-blue-600"><span class="bg-blue-50 px-2 py-1 rounded">${p.categoria}</span></td>
-                        <td class="py-3 px-4 text-slate-900 font-semibold">${p.detalle}</td>
-                        <td class="py-3 px-4 text-right text-slate-900 font-black">$${parseFloat(p.precio).toFixed(2)}</td>
-                        <td class="py-3 px-4 text-center">${p.iva ? '<span class="text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded text-[10px] font-bold">15% IVA</span>' : '<span class="text-slate-400 bg-slate-50 px-2.5 py-0.5 rounded text-[10px]">0% IVA</span>'}</td>
-                    </tr>
+
+            Object.keys(baseProductos).forEach(codigo => {
+                const prod = baseProductos[codigo];
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-mono font-bold">${codigo}</td>
+                    <td class="py-3 px-4 text-slate-500">${prod.categoria}</td>
+                    <td class="py-3 px-4">${prod.detalle}</td>
+                    <td class="py-3 px-4 text-right font-mono">$${prod.precio.toFixed(2)}</td>
+                    <td class="py-3 px-4 text-center font-mono">${prod.iva ? '15%' : '0%'}</td>
+                    <td class="py-3 px-4 text-center">
+                        <button type="button" onclick="confirmarEliminarProducto('${codigo}', '${prod.detalle}')" class="bg-red-600 hover:bg-red-700 text-white px-2.5 py-1 rounded-md text-[11px] font-bold transition-all shadow-sm">
+                            🗑️ Eliminar
+                        </button>
+                    </td>
                 `;
+                tbody.appendChild(tr);
             });
-            lucide.createIcons();
         }
 
         function cargarClientesUI() {
             const tbody = document.getElementById('tabla-clientes-items');
             tbody.innerHTML = "";
+
             Object.keys(baseClientes).forEach(id => {
-                const c = baseClientes[id];
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition-colors">
-                        <td class="py-3 px-4 font-mono font-bold text-slate-600">${id}</td>
-                        <td class="py-3 px-4 text-slate-900 font-bold">${c.nombre || '<i class="text-slate-400">Sin Nombre</i>'}</td>
-                        <td class="py-3 px-4 text-slate-500">${c.direccion || '<i class="text-slate-400">Sin Dirección</i>'}</td>
-                        <td class="py-3 px-4 font-mono text-xs text-blue-600">${c.email || '<i class="text-slate-400">Sin Email</i>'}</td>
-                    </tr>
+                const cliente = baseClientes[id];
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-mono font-bold">${id}</td>
+                    <td class="py-3 px-4">${cliente.nombre || '<em class="text-slate-300">Sin nombre</em>'}</td>
+                    <td class="py-3 px-4 text-slate-500">${cliente.direccion || '-'}</td>
+                    <td class="py-3 px-4 text-slate-400 font-mono">${cliente.email || '-'}</td>
+                    <td class="py-3 px-4 text-center">
+                        <button type="button" onclick="confirmarEliminarCliente('${id}', '${cliente.nombre}')" class="bg-red-600 hover:bg-red-700 text-white px-2.5 py-1 rounded-md text-[11px] font-bold transition-all shadow-sm">
+                            🗑️ Eliminar
+                        </button>
+                    </td>
                 `;
+                tbody.appendChild(tr);
             });
+        }
+
+        function renderizarTablaFactura() {
+            const tbody = document.getElementById('tabla-items');
+            tbody.innerHTML = "";
+            let subtotal = 0;
+            let iva = 0;
+
+            if (carrito.length === 0) {
+                document.getElementById('ticket-vacio').style.display = 'block';
+            } else {
+                document.getElementById('ticket-vacio').style.display = 'none';
+            }
+
+            carrito.forEach((item, index) => {
+                const totalItem = item.precio * item.cantidad;
+                subtotal += totalItem;
+                if (item.iva) {
+                    iva += totalItem * 0.15;
+                }
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="py-2 px-3 font-mono">${item.codigo}</td>
+                    <td class="py-2 px-3">${item.detalle}</td>
+                    <td class="py-2 px-3 text-center">${item.cantidad}</td>
+                    <td class="py-2 px-3 text-right">$${item.precio.toFixed(2)}</td>
+                    <td class="py-2 px-3 text-right">$${totalItem.toFixed(2)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            const total = subtotal + iva;
+            document.getElementById('txt-subtotal').innerText = `$${subtotal.toFixed(2)}`;
+            document.getElementById('txt-iva').innerText = `$${iva.toFixed(2)}`;
+            document.getElementById('txt-total').innerText = `$${total.toFixed(2)}`;
         }
 
         function limpiarTicket() {
             carrito = [];
             renderizarTablaFactura();
-            document.getElementById('codigo-barras').focus();
         }
 
-        function solicitarGuardadoVenta() {
-            if (carrito.length === 0) {
-                alert("No hay artículos en el carrito para guardar.");
+        // =========================================================================
+        // LÓGICA DE ELIMINACIÓN CON VALIDACIÓN DE OPERACIONES EN EL BACKEND
+        // =========================================================================
+        const URL_API_CLEVER = "https://app-d98e5dd8-3cba-4a2d-a39f-0fc6aeb7fc39.cleverapps.io/procesar_factura.php";
+
+        async function confirmarEliminarCliente(idCliente, nombreCliente) {
+            if (idCliente === "9999999999999") {
+                alert("⚠️ No se puede eliminar el registro de CONSUMIDOR FINAL por seguridad del sistema.");
                 return;
             }
-
-            const rucCedula = document.getElementById('cliente-id').value.trim() || "9999999999999";
-            const nombre = document.getElementById('cliente-nombre').value.trim() || "CONSUMIDOR FINAL";
-            const direccion = document.getElementById('cliente-dir').value.trim() || "Av. Principal Ecuador";
             
-            let subtotal = 0;
-            let totalIva = 0;
-            let filasArticulos = "";
+            const confirmar = confirm(`¿Estás seguro de que deseas eliminar al cliente "${nombreCliente || idCliente}"?`);
+            if (!confirmar) return;
 
-            carrito.forEach(item => {
-                const precioNum = parseFloat(item.precio) || 0;
-                const cantNum = parseInt(item.cantidad) || 0;
-                const totalLinea = precioNum * cantNum;
-                subtotal += totalLinea;
-                if (item.iva) totalIva += totalLinea * 0.15;
+            try {
+                const response = await fetch(`${URL_API_CLEVER}?action=eliminar_cliente`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id_cliente: idCliente })
+                });
 
-                let detalleCorto = item.detalle.substring(0, 22).padEnd(22, ' ');
-                filasArticulos += `${detalleCorto} ${cantNum.toString().padStart(3, ' ')}   $${totalLinea.toFixed(2).padStart(7, ' ')}\n`;
-            });
+                const res = await response.json();
 
-            const totalGeneral = subtotal + totalIva;
-            const fechaHora = new Date().toLocaleString();
-            
-            // Reemplazo dinámico usando los datos fiscales activos de "datosEmpresa"
-            const numEstablecimiento = `${datosEmpresa.establecimiento}-${datosEmpresa.puntoEmision}-` + Math.floor(100000000 + Math.random() * 900000000);
-
-            const estructuraTicketHTML = `
-                <div style="text-align: center; margin-bottom: 10px;">
-                    <strong style="font-size: 13px;">${datosEmpresa.nombreComercial}</strong><br>
-                    <span>${datosEmpresa.razonSocial}</span><br>
-                    <span>RUC: ${datosEmpresa.ruc}</span><br>
-                    <span>Matriz: ${datosEmpresa.direccion}</span><br>
-                    <span>Obligado Contabilidad: ${datosEmpresa.obligadoContabilidad}</span><br>
-                    <span style="font-size: 9px; font-weight: bold;">${datosEmpresa.regimen}</span><br>
-                    <span>--------------------------------</span><br>
-                    <strong>COMPROBANTE INTERNO DE VENTA</strong><br>
-                    <span>No: ${numEstablecimiento}</span>
-                </div>
-                <div style="margin-bottom: 10px;">
-                    <span>Fecha: ${fechaHora}</span><br>
-                    <span>Cliente: ${nombre}</span><br>
-                    <span>CI/RUC: ${rucCedula}</span><br>
-                    <span>Dir: ${direccion}</span><br>
-                    <span>--------------------------------</span>
-                </div>
-                <div style="margin-bottom: 10px; font-family: monospace; white-space: pre-wrap;">
-Articulo               Cant     Total
---------------------------------
-${filasArticulos}--------------------------------
-                </div>
-                <div style="text-align: right; margin-bottom: 15px; font-family: monospace;">
-                    <span>SUBTOTAL NETO: $${subtotal.toFixed(2)}</span><br>
-                    <span>IVA TARIFA 15%: $${totalIva.toFixed(2)}</span><br>
-                    <strong style="font-size: 12px;">TOTAL PAGADO: $${totalGeneral.toFixed(2)}</strong>
-                </div>
-                <div style="text-align: center; font-size: 10px; margin-top: 10px;">
-                    <span>¡Gracias por su compra!</span><br>
-                    <span>Desarrollado por ANUAR PROYECTOS</span>
-                </div>
-            `;
-
-            document.getElementById('preview-ticket-modal').innerHTML = estructuraTicketHTML;
-            document.getElementById('area-impresion-ticket').innerHTML = estructuraTicketHTML;
-
-            document.getElementById('modal-impresion').classList.remove('hidden');
-        }
-
-        function cerrarModalImpresion() {
-            document.getElementById('modal-impresion').classList.add('hidden');
-            limpiarTicket();
-        }
-
-        function ejecutarImpresionNative() {
-            window.print();
-            cerrarModalImpresion();
-        }
-
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'F12') {
-                e.preventDefault();
-                solicitarGuardadoVenta();
+                if (res.success) {
+                    delete baseClientes[idCliente];
+                    cargarClientesUI();
+                    alert(res.message);
+                } else {
+                    alert(`⚠️ Operación rechazada por el servidor: ${res.error}`);
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Error de red. No se pudo comprobar el estado con el servidor de Clever Cloud.");
             }
-        });
+        }
+
+        async function confirmarEliminarProducto(codigoProducto, detalleProducto) {
+            const confirmar = confirm(`¿Estás seguro de que deseas eliminar el producto "${detalleProducto}"?`);
+            if (!confirmar) return;
+
+            try {
+                const response = await fetch(`${URL_API_CLEVER}?action=eliminar_producto`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ codigo: codigoProducto })
+                });
+
+                const res = await response.json();
+
+                if (res.success) {
+                    delete baseProductos[codigoProducto];
+                    cargarCatalogoUI();
+                    alert(res.message);
+                } else {
+                    alert(`⚠️ Operación rechazada por el servidor: ${res.error}`);
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Error de red. No se pudo comprobar el estado con el servidor de Clever Cloud.");
+            }
+        }
     </script>
 </body>
 </html>
