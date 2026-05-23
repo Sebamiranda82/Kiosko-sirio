@@ -1,17 +1,100 @@
 
 <?php
+<?php
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST");
+header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
 
-// 1. Leer datos del carrito enviados desde Panel.html
-$data = json_decode(file_get_contents("php://input"), true);
+// Manejo de peticiones preflight (CORS)
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit(0);
+}
 
+// 1. Configuración de conexión a la Base de Datos (Usa las credenciales de tu db-tienda-eglobal)
+$host     = "btulkdyvcpxf93ovtmvh-mysql.services.clever-cloud.com";
+$dbname   = "btulkdyvcpxf93ovtmvh";
+$username = "uhfykaay2nzfj7w2";
+$password = "Mete_Aqui_Tu_Password_De_La_Captura"; // <-- REEMPLAZA CON LA CONTRASEÑA REAL DE TU BASE DE DATOS
+
+try {
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    echo json_encode(["success" => false, "error" => "Error de conexión a la BD: " . $e->getMessage()]);
+    exit;
+}
+
+// 2. Leer datos del cuerpo de la petición (JSON)
+$data = json_decode(file_get_contents("php://input"), true);
+$action = isset($_GET['action']) ? $_GET['action'] : '';
+
+// =========================================================================
+// ACCIÓN: ELIMINAR PRODUCTO
+// =========================================================================
+if ($action === 'eliminar_producto') {
+    if (!$data || !isset($data['codigo'])) {
+        echo json_encode(["success" => false, "error" => "Falta el código del producto."]);
+        exit;
+    }
+
+    $codigo = trim($data['codigo']);
+
+    try {
+        // Ejecutamos la baja en la tabla "productos"
+        $stmt = $pdo->prepare("DELETE FROM productos WHERE codigo = ?");
+        $stmt->execute([$codigo]);
+
+        if ($stmt->rowCount() > 0) {
+            echo json_encode(["success" => true, "message" => "Producto eliminado de la base de datos correctamente."]);
+        } else {
+            echo json_encode(["success" => false, "error" => "El producto no se encontró en la base de datos o ya fue eliminado."]);
+        }
+    } catch (PDOException $e) {
+        echo json_encode(["success" => false, "error" => "No se pudo eliminar: " . $e->getMessage()]);
+    }
+    exit;
+}
+
+// =========================================================================
+// ACCIÓN: ELIMINAR CLIENTE
+// =========================================================================
+if ($action === 'eliminar_cliente') {
+    if (!$data || !isset($data['id_cliente'])) {
+        echo json_encode(["success" => false, "error" => "Falta la identificación del cliente."]);
+        exit;
+    }
+
+    $idCliente = trim($data['id_cliente']);
+
+    try {
+        // Ejecutamos la baja en la tabla de clientes (ajusta el nombre de la tabla/columna si varía)
+        $stmt = $pdo->prepare("DELETE FROM clientes WHERE id_cliente = ?");
+        $stmt->execute([$idCliente]);
+
+        if ($stmt->rowCount() > 0) {
+            echo json_encode(["success" => true, "message" => "Cliente eliminado de la base de datos correctamente."]);
+        } else {
+            echo json_encode(["success" => false, "error" => "El cliente no se encontró en la base de datos."]);
+        }
+    } catch (PDOException $e) {
+        echo json_encode(["success" => false, "error" => "No se pudo eliminar el cliente: " . $e->getMessage()]);
+    }
+    exit;
+}
+
+// =========================================================================
+// PROCESAR FACTURACIÓN (Tu lógica existente se ejecuta si no es ninguna de las anteriores)
+// =========================================================================
 if (!$data || !isset($data['productos'])) {
     echo json_encode(["status" => "error", "mensaje" => "No hay productos recibidos."]);
     exit;
 }
+
+// ... (Aquí continúa el resto de tu código original para armar el XML del SRI e insertar la factura) ...
+
+// 1. Leer datos del carrito enviados desde Panel.html
+$data = json_decode(file_get_contents("php://input"), true);
 
 // 2. Datos duros del emisor para la estructura del SRI
 $ruc_emisor   = "1793083115001"; // Cambia por tu RUC real de pruebas/producción
