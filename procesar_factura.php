@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 $host     = "btulkdyvcpxf93ovtmvh-mysql.services.clever-cloud.com";
 $dbname   = "btulkdyvcpxf93ovtmvh";
 $username = "uhfykaay2nzfj7w2";
-$password = "Mete_Aqui_Tu_Password_De_La_Captura"; // <-- REEMPLAZA CON LA CONTRASEÑA REAL DE TU BASE DE DATOS
+$password = "87bimOAodwmWggZKrZfl"; // <-- REEMPLAZA CON LA CONTRASEÑA REAL DE TU BASE DE DATOS
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
