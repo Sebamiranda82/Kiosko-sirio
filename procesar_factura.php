@@ -29,6 +29,33 @@ $inputRaw = file_get_contents("php://input");
 $data = json_decode($inputRaw, true);
 
 // =========================================================================
+// ACCIÓN: OBTENER TODOS LOS PRODUCTOS (Para cargar el catálogo dinámico)
+// =========================================================================
+if ($action === 'obtener_productos') {
+    try {
+        $stmt = $pdo->prepare("SELECT codigo, detalle, precio, iva, categoria FROM productos");
+        $stmt->execute();
+        $productos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Formateamos la respuesta para que el JavaScript la entienda como un objeto estructurado
+        $listaFormat = [];
+        foreach ($productos as $p) {
+            $listaFormat[$p['codigo']] = [
+                "detalle" => $p['detalle'],
+                "precio" => (float)$p['precio'],
+                "iva" => (bool)$p['iva'],
+                "categoria" => $p['categoria']
+            ];
+        }
+        
+        echo json_encode(["success" => true, "productos" => $listaFormat]);
+    } catch (PDOException $e) {
+        echo json_encode(["success" => false, "error" => "Error al obtener productos: " . $e->getMessage()]);
+    }
+    exit;
+}
+
+// =========================================================================
 // RUTA 1: ELIMINAR PRODUCTO (action=eliminar_producto)
 // =========================================================================
 if ($action === 'eliminar_producto') {
