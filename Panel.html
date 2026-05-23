@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tienda EGlobal - Sistema Integral v11.6</title>
+    <title>Tienda EGlobal - Sistema Integral v11.8</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -30,8 +30,8 @@
 <body class="bg-[#f8fafc] font-sans antialiased text-slate-800">
 
     <div class="bg-blue-600 text-white text-center py-1.5 px-4 text-xs font-mono font-bold tracking-wide shadow-inner flex justify-center items-center space-x-2">
-        <span>🚀 COMPILACIÓN ACTIVA: SISTEMA INTEGRAL v11.6</span>
-        <span class="bg-white/20 px-2 py-0.5 rounded text-[10px]">CAMBIOS: BOTÓN ELIMINAR + ALERTAS DE RED SEGURAS</span>
+        <span>🚀 COMPILACIÓN ACTIVA: SISTEMA INTEGRAL v11.8</span>
+        <span class="bg-white/20 px-2 py-0.5 rounded text-[10px]">CAMBIOS: CATÁLOGO DINÁMICO ENLAZADO A MYSQL EN TIEMPO REAL</span>
     </div>
 
     <header class="bg-gradient-to-r from-blue-900 to-slate-900 text-white shadow-md border-b border-blue-800/40">
@@ -357,34 +357,48 @@
             regimen: "CONTRIBUYENTE RÉGIMEN RIMPE"
         };
 
-        const baseClientes = {
+        // Arreglo inicial de clientes en el Script
+        let baseClientes = {
             "9999999999999": { nombre: "CONSUMIDOR FINAL", direccion: "Av. Principal Ecuador", email: "consumidor@eglobal.com" },
             "0999999999001": { nombre: "ANUAR PROYECTOS", direccion: "Urdesa Central", email: "info@anuarproyectos.com" },
-            "0967482498001": { nombre: "CONSUMIDOR FINAL", direccion: "Av. Principal Ecuador", email: "consumidor@eglobal.com" },
-            "0967482498": { nombre: "CONSUMIDOR FINAL", direccion: "Av. Principal Ecuador", email: "consumidor@eglobal.com" }
+            "0967482498001": { nombre: "CONSUMIDOR FINAL", direccion: "Av. Principal Ecuador", email: "consumidor@eglobal.com" }
         };
 
-        const baseProductos = {
-            "1234": { detalle: "Artículo Comercial Estándar Mod A", precio: 2.50, iva: true, categoria: "General" },
-            "2021": { detalle: "Unidad Operativa de Consumo Tipo B", precio: 4.80, iva: true, categoria: "Suministros" },
-            "7890": { detalle: "Router de Datos Corporativo R2", precio: 85.00, iva: true, categoria: "Tecnología" },
-            "5566": { detalle: "Cables Estructurales Cat6 (Metro)", precio: 0.75, iva: false, categoria: "Tecnología" }
-        };
-
+        // El catálogo inicia vacío para mapear de forma íntegra lo que existe en MySQL
+        let baseProductos = {}; 
         let carrito = [];
         const URL_API_CLEVER = "https://app-d98e5dd8-3cba-4a2d-a39f-0fc6aeb7fc39.cleverapps.io/procesar_factura.php";
 
-        window.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('cliente-id').value = "0967482498001";
+        window.addEventListener('DOMContentLoaded', async () => {
+            document.getElementById('cliente-id').value = "9999999999999";
             document.getElementById('cliente-nombre').value = "CONSUMIDOR FINAL";
             document.getElementById('cliente-dir').value = "Av. Principal Ecuador";
             document.getElementById('cliente-email').value = "consumidor@eglobal.com";
             
             cargarFormularioEmpresaUI();
-            cargarCatalogoUI();
+            await cargarProductosDesdeBD(); // Carga asíncrona real desde Clever Cloud MySQL
             cargarClientesUI();
             renderizarTablaFactura();
         });
+
+        // FUNCIÓN CLAVE: Solicitar catálogo actual directo a MySQL
+        async function cargarProductosDesdeBD() {
+            try {
+                const response = await fetch(`${URL_API_CLEVER}?action=obtener_productos`);
+                if (!response.ok) throw new Error(`Código de red: ${response.status}`);
+                
+                const res = await response.json();
+                if (res.success) {
+                    baseProductos = res.productos;
+                    cargarCatalogoUI();
+                } else {
+                    console.error("Error devuelto por la API:", res.error);
+                }
+            } catch (error) {
+                console.error("Error al conectar:", error);
+                alert("Aviso: El catálogo está vacío en la base de datos o el servidor web está respondiendo lento.");
+            }
+        }
 
         function cambiarPestana(idVista) {
             ['caja', 'catalogo', 'clientes', 'empresa'].forEach(v => {
@@ -506,7 +520,7 @@
                             cantidad: 1
                         });
                     } else {
-                        alert("Código no registrado en el catálogo.");
+                        alert("Código no registrado en el catálogo de la Base de Datos.");
                     }
                     input.value = "";
                     renderizarTablaFactura();
@@ -600,7 +614,6 @@
             renderizarTablaFactura();
         }
 
-        // ENVIAR / GUARDAR FACTURA ORIGINAL COMPLETA
         async function solicitarGuardadoVenta() {
             if (carrito.length === 0) {
                 alert("El carrito está vacío.");
@@ -619,7 +632,6 @@
             };
 
             try {
-                // Se envía sin parámetros URL para que ejecute tu lógica por defecto de guardado
                 const response = await fetch(URL_API_CLEVER, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -640,7 +652,7 @@
             }
         }
 
-        // FUNCIONES DE BAJAS SEGURAS (PRODUCTOS Y CLIENTES)
+        // ELIMINACIÓN SEGURO DE PRODUCTOS EN MYSQL
         async function confirmarEliminarProducto(codigoProducto, detalleProducto) {
             const confirmar = confirm(`¿Estás seguro de que deseas eliminar el producto "${detalleProducto}"?`);
             if (!confirmar) return;
@@ -652,9 +664,7 @@
                     body: JSON.stringify({ codigo: codigoProducto })
                 });
 
-                if (!response.ok) {
-                    throw new Error(`Código de error de red ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`Código de error de red ${response.status}`);
 
                 const res = await response.json();
 
@@ -670,9 +680,10 @@
             }
         }
 
+        // ELIMINACIÓN CON CONTROL DE INTEGRIDAD EN CLIENTES
         async function confirmarEliminarCliente(idCliente, nombreCliente) {
             if (idCliente === "9999999999999") {
-                alert("⚠️ No se puede eliminar el registro de CONSUMIDOR FINAL por seguridad del sistema.");
+                alert("⚠️ No se puede eliminar el registro de CONSUMIDOR FINAL por seguridad estructural.");
                 return;
             }
             
@@ -693,12 +704,12 @@
                 if (res && res.success) {
                     delete baseClientes[idCliente];
                     cargarClientesUI();
-                    alert(res.message || "Cliente removido.");
+                    alert(res.message || "Cliente removido con éxito.");
                 } else {
-                    alert(`⚠️ Operación rechazada: ${res.error || 'Respuesta inesperada del servidor.'}`);
+                    alert(`⚠️ Operación Rechazada: ${res.error || 'La base de datos denegó la consulta.'}`);
                 }
             } catch (error) {
-                alert(`Error de conexión: ${error.message}`);
+                alert(`Error de conexión de red: ${error.message}`);
             }
         }
 
