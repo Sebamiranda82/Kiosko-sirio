@@ -1,4 +1,9 @@
 <?php
+// =========================================================================
+// ARCHIVO: procesar_factura.php | COMPILACIÓN: v12.2 (PROD - RAILWAY.APP)
+// CAMBIOS: CIERRES EXPRESOS PDO, RUTAS UNIFICADAS, REESTRUCTURACIÓN DE ENTORNOS
+// =========================================================================
+
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
@@ -9,17 +14,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
 
-// 1. Conexión segura a la base de datos MySQL
-$host     = "btulkdyvcpxf93ovtmvh-mysql.services.clever-cloud.com";
-$dbname   = "btulkdyvcpxf93ovtmvh";
-$username = "uhfykaay2nzfj7w2";
-$password = "87bimOAodwmWggZKrZfl"; // <-- Pon tu clave de Clever Cloud aquí
+// 1. Configuración de Conexión Flexible (Soporta Variables de Entorno de Railway o Rígidas)
+$host     = getenv('MYSQLHOST')     ?: "AQUÍ_TU_HOST_O_PRIVATE_URL_DE_RAILWAY";
+$dbname   = getenv('MYSQLDATABASE') ?: "railway";
+$username = getenv('MYSQLUSER')     ?: "root";
+$password = getenv('MYSQLPASSWORD') ?: "TU_CONTRASEÑA_DE_RAILWAY";
+$port     = getenv('MYSQLPORT')     ?: "3306";
 
 try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo = new PDO("mysql:host=$host;port=$port;dbname=$dbname;charset=utf8", $username, $password, [
+        PDO::ATTR_PERSISTENT => false,
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+    ]);
 } catch (PDOException $e) {
-    echo json_encode(["success" => false, "error" => "Error de conexión BD: " . $e->getMessage()]);
+    echo json_encode(["success" => false, "error" => "Error de conexión BD en Railway: " . $e->getMessage()]);
     exit;
 }
 
@@ -37,7 +45,6 @@ if ($action === 'obtener_productos') {
         $stmt->execute();
         $productos = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        // Formateamos la respuesta para que el JavaScript la entienda como un objeto estructurado
         $listaFormat = [];
         foreach ($productos as $p) {
             $listaFormat[$p['codigo']] = [
@@ -52,6 +59,33 @@ if ($action === 'obtener_productos') {
     } catch (PDOException $e) {
         echo json_encode(["success" => false, "error" => "Error al obtener productos: " . $e->getMessage()]);
     }
+    $pdo = null; // Cierre de canal persistente
+    exit;
+}
+
+// =========================================================================
+// ACCIÓN: OBTENER TODOS LOS CLIENTES (Para sincronización inicial de interfaz)
+// =========================================================================
+if ($action === 'obtener_clientes') {
+    try {
+        $stmt = $pdo->prepare("SELECT id_cliente, nombre, direccion, email FROM clientes");
+        $stmt->execute();
+        $clientes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        $listaFormat = [];
+        foreach ($clientes as $c) {
+            $listaFormat[$c['id_cliente']] = [
+                "nombre" => $c['nombre'],
+                "direccion" => $c['direccion'],
+                "email" => $c['email']
+            ];
+        }
+        
+        echo json_encode(["success" => true, "clientes" => $listaFormat]);
+    } catch (PDOException $e) {
+        echo json_encode(["success" => false, "error" => "Error al obtener clientes: " . $e->getMessage()]);
+    }
+    $pdo = null;
     exit;
 }
 
@@ -61,6 +95,7 @@ if ($action === 'obtener_productos') {
 if ($action === 'eliminar_producto') {
     if (!$data || !isset($data['codigo'])) {
         echo json_encode(["success" => false, "error" => "No se recibió el código del producto."]);
+        $pdo = null;
         exit;
     }
 
@@ -72,7 +107,8 @@ if ($action === 'eliminar_producto') {
     } catch (PDOException $e) {
         echo json_encode(["success" => false, "error" => "Error al ejecutar DELETE en MySQL: " . $e->getMessage()]);
     }
-    exit; // Finaliza aquí para no evaluar la estructura de facturas
+    $pdo = null;
+    exit; 
 }
 
 // =========================================================================
@@ -81,10 +117,19 @@ if ($action === 'eliminar_producto') {
 if ($action === 'eliminar_cliente') {
     if (!$data || !isset($data['id_cliente'])) {
         echo json_encode(["success" => false, "error" => "No se recibió la identificación del cliente."]);
+        $pdo = null;
         exit;
     }
 
     $idCliente = trim($data['id_cliente']);
+    
+    // Bloqueo lógico de seguridad para Consumidor Final
+    if ($idCliente === "9999999999999") {
+        echo json_encode(["success" => false, "error" => "No se puede eliminar el registro por defecto del sistema."]);
+        $pdo = null;
+        exit;
+    }
+
     try {
         $stmt = $pdo->prepare("DELETE FROM clientes WHERE id_cliente = ?");
         $stmt->execute([$idCliente]);
@@ -92,7 +137,8 @@ if ($action === 'eliminar_cliente') {
     } catch (PDOException $e) {
         echo json_encode(["success" => false, "error" => "Error al ejecutar DELETE en MySQL: " . $e->getMessage()]);
     }
-    exit; // Finaliza aquí
+    $pdo = null;
+    exit; 
 }
 
 // =========================================================================
@@ -100,11 +146,11 @@ if ($action === 'eliminar_cliente') {
 // =========================================================================
 if (!$data || !isset($data['productos'])) {
     echo json_encode(["status" => "error", "mensaje" => "No hay productos recibidos para facturar."]);
+    $pdo = null;
     exit;
 }
 
 // --- TU LÓGICA DE FACTURACIÓN ORIGINAL (PROCESAR XML, FIRMA SRI, ETC.) ---
-// Aquí puedes mantener o pegar el resto de tus variables de entorno del emisor:
 $ruc_emisor   = "1793083115001";
 $ambiente     = "1";
 $tipoComprob  = "01";
@@ -112,6 +158,8 @@ $establec     = "001";
 $puntoEmision = "001";
 $secuencial   = "000000125";
 
-// (Conserva el resto de las inserciones a tus tablas de facturas abajo...)
+// (Conserva aquí tus inserciones a tablas transaccionales de facturas...)
+
 echo json_encode(["status" => "success", "mensaje" => "Factura procesada con éxito."]);
+$pdo = null; // Cierre definitivo
 ?>
