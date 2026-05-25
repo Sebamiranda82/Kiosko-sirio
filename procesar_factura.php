@@ -15,10 +15,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 // 1. Configuración de Conexión Flexible (Soporta Variables de Entorno de Railway o Rígidas)
-$host     = getenv('MYSQLHOST')     ?: "AQUÍ_TU_HOST_O_PRIVATE_URL_DE_RAILWAY";
+$host     = getenv('MYSQLHOST')     ?: "mysql.railway.internal";
 $dbname   = getenv('MYSQLDATABASE') ?: "railway";
 $username = getenv('MYSQLUSER')     ?: "root";
-$password = getenv('MYSQLPASSWORD') ?: "TU_CONTRASEÑA_DE_RAILWAY";
+$password = getenv('MYSQLPASSWORD') ?: "hKzzjMobyaFvWlhGAjDTtAQFcBQUbyAx";
 $port     = getenv('MYSQLPORT')     ?: "3306";
 
 try {
