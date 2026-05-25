@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tienda EGlobal - Sistema Integral v11.8</title>
+    <title>Tienda EGlobal - Sistema Integral v12.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -30,8 +30,8 @@
 <body class="bg-[#f8fafc] font-sans antialiased text-slate-800">
 
     <div class="bg-blue-600 text-white text-center py-1.5 px-4 text-xs font-mono font-bold tracking-wide shadow-inner flex justify-center items-center space-x-2">
-        <span>🚀 COMPILACIÓN ACTIVA: SISTEMA INTEGRAL v11.8</span>
-        <span class="bg-white/20 px-2 py-0.5 rounded text-[10px]">CAMBIOS: CATÁLOGO DINÁMICO ENLAZADO A MYSQL EN TIEMPO REAL</span>
+        <span>🚀 COMPILACIÓN ACTIVA: SISTEMA INTEGRAL v12.1</span>
+        <span class="bg-white/20 px-2 py-0.5 rounded text-[10px]">CAMBIOS: MAPEO INDEXADO REFORZADO PARA CATÁLOGO DE PRODUCTOS</span>
     </div>
 
     <header class="bg-gradient-to-r from-blue-900 to-slate-900 text-white shadow-md border-b border-blue-800/40">
@@ -357,14 +357,7 @@
             regimen: "CONTRIBUYENTE RÉGIMEN RIMPE"
         };
 
-        // Arreglo inicial de clientes en el Script
-        let baseClientes = {
-            "9999999999999": { nombre: "CONSUMIDOR FINAL", direccion: "Av. Principal Ecuador", email: "consumidor@eglobal.com" },
-            "0999999999001": { nombre: "ANUAR PROYECTOS", direccion: "Urdesa Central", email: "info@anuarproyectos.com" },
-            "0967482498001": { nombre: "CONSUMIDOR FINAL", direccion: "Av. Principal Ecuador", email: "consumidor@eglobal.com" }
-        };
-
-        // El catálogo inicia vacío para mapear de forma íntegra lo que existe en MySQL
+        let baseClientes = {};
         let baseProductos = {}; 
         let carrito = [];
         const URL_API_CLEVER = "https://app-d98e5dd8-3cba-4a2d-a39f-0fc6aeb7fc39.cleverapps.io/procesar_factura.php";
@@ -376,12 +369,25 @@
             document.getElementById('cliente-email').value = "consumidor@eglobal.com";
             
             cargarFormularioEmpresaUI();
-            await cargarProductosDesdeBD(); // Carga asíncrona real desde Clever Cloud MySQL
-            cargarClientesUI();
+            await cargarClientesDesdeBD();
+            await cargarProductosDesdeBD(); 
             renderizarTablaFactura();
         });
 
-        // FUNCIÓN CLAVE: Solicitar catálogo actual directo a MySQL
+        async function cargarClientesDesdeBD() {
+            try {
+                const response = await fetch(`${URL_API_CLEVER}?action=obtener_clientes`);
+                if (!response.ok) throw new Error(`Status ${response.status}`);
+                const res = await response.json();
+                if (res.success) {
+                    baseClientes = res.clientes;
+                    cargarClientesUI();
+                }
+            } catch (error) {
+                console.error("Error sincronizando clientes:", error);
+            }
+        }
+
         async function cargarProductosDesdeBD() {
             try {
                 const response = await fetch(`${URL_API_CLEVER}?action=obtener_productos`);
@@ -389,14 +395,17 @@
                 
                 const res = await response.json();
                 if (res.success) {
+                    // Corrección de mapeo: Se recibe la estructura indexada directo de la base de datos
                     baseProductos = res.productos;
                     cargarCatalogoUI();
                 } else {
-                    console.error("Error devuelto por la API:", res.error);
+                    if(res.error && res.error.includes("max_user_connections")) {
+                        alert("⚠️ Servidor ocupado. Reintentando sincronizar catálogo...");
+                        setTimeout(cargarProductosDesdeBD, 3000);
+                    }
                 }
             } catch (error) {
-                console.error("Error al conectar:", error);
-                alert("Aviso: El catálogo está vacío en la base de datos o el servidor web está respondiendo lento.");
+                console.error("Error de conexión de productos:", error);
             }
         }
 
@@ -496,7 +505,7 @@
             cargarCatalogoUI();
             renderizarTablaFactura(); 
             document.getElementById('masivo-porcentaje').value = "";
-            alert(`Se actualizaron ${modificados} artículos de la categoría [${categoriaSeleccionada}].`);
+            alert(`Se actualizaron ${modificados} artículos localmente.`);
         }
 
         function detectarTeclado(event) {
@@ -520,7 +529,7 @@
                             cantidad: 1
                         });
                     } else {
-                        alert("Código no registrado en el catálogo de la Base de Datos.");
+                        alert("Código no registrado en el catálogo sincronizado.");
                     }
                     input.value = "";
                     renderizarTablaFactura();
@@ -642,19 +651,18 @@
                 
                 const res = await response.json();
                 if (res.status === 'success' || res.success) {
-                    alert("Venta guardada con éxito en el servidor.");
+                    alert("Venta guardada con éxito.");
                     limpiarTicket();
                 } else {
-                    alert("Error al guardar factura: " + (res.mensaje || "Desconocido"));
+                    alert("Error al guardar: " + (res.mensaje || "Intente nuevamente."));
                 }
             } catch (e) {
-                alert("Error de conexión al intentar guardar la venta: " + e.message);
+                alert("Error de red al guardar.");
             }
         }
 
-        // ELIMINACIÓN SEGURO DE PRODUCTOS EN MYSQL
         async function confirmarEliminarProducto(codigoProducto, detalleProducto) {
-            const confirmar = confirm(`¿Estás seguro de que deseas eliminar el producto "${detalleProducto}"?`);
+            const confirmar = confirm(`¿Estás seguro de eliminar el producto "${detalleProducto}"?`);
             if (!confirmar) return;
 
             try {
@@ -664,30 +672,26 @@
                     body: JSON.stringify({ codigo: codigoProducto })
                 });
 
-                if (!response.ok) throw new Error(`Código de error de red ${response.status}`);
-
                 const res = await response.json();
-
                 if (res && res.success) {
                     delete baseProductos[codigoProducto];
                     cargarCatalogoUI();
-                    alert(res.message || "Producto removido del catálogo.");
+                    alert(res.message);
                 } else {
-                    alert(`⚠️ Operación rechazada: ${res.error || 'Respuesta inesperada del servidor.'}`);
+                    alert(`⚠️ Rechazado: ${res.error}`);
                 }
             } catch (error) {
-                alert(`Error de conexión: ${error.message}. Verifica que la API esté corriendo.`);
+                alert("Error de comunicación.");
             }
         }
 
-        // ELIMINACIÓN CON CONTROL DE INTEGRIDAD EN CLIENTES
         async function confirmarEliminarCliente(idCliente, nombreCliente) {
             if (idCliente === "9999999999999") {
-                alert("⚠️ No se puede eliminar el registro de CONSUMIDOR FINAL por seguridad estructural.");
+                alert("⚠️ No se puede eliminar al CONSUMIDOR FINAL por resguardo lógico del sistema.");
                 return;
             }
             
-            const confirmar = confirm(`¿Estás seguro de que deseas eliminar al cliente "${nombreCliente || idCliente}"?`);
+            const confirmar = confirm(`¿Estás seguro de eliminar al cliente "${nombreCliente || idCliente}"?`);
             if (!confirmar) return;
 
             try {
@@ -697,19 +701,16 @@
                     body: JSON.stringify({ id_cliente: idCliente })
                 });
 
-                if (!response.ok) throw new Error(`Código de red ${response.status}`);
-
                 const res = await response.json();
-
                 if (res && res.success) {
                     delete baseClientes[idCliente];
                     cargarClientesUI();
-                    alert(res.message || "Cliente removido con éxito.");
+                    alert(res.message);
                 } else {
-                    alert(`⚠️ Operación Rechazada: ${res.error || 'La base de datos denegó la consulta.'}`);
+                    alert(`⚠️ Integridad Asegurada: ${res.error}`);
                 }
             } catch (error) {
-                alert(`Error de conexión de red: ${error.message}`);
+                alert("Error de conexión.");
             }
         }
 
