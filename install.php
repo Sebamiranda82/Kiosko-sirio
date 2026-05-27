@@ -2,11 +2,11 @@
 // CONTROL DE VERSIÓN: FORZADO MANUAL ABSOLUTO v12.62
 
 // REEMPLAZA LO QUE ESTÁ ENTRE LAS COMILLAS CON LOS DATOS REALES QUE COPIASTE:
-$host     = 'PEGAR_AQUI_TU_MYSQLHOST'; 
-$port     = 'PEGAR_AQUI_TU_MYSQLPORT'; 
-$dbname   = 'PEGAR_AQUI_TU_MYSQLDATABASE';
-$username = 'PEGAR_AQUI_TU_MYSQLUSER';
-$password = 'PEGAR_AQUI_TU_MYSQLPASSWORD';
+$host     = 'mysql.railway.internal'; 
+$port     = '3306'; 
+$dbname   = 'railway';
+$username = 'root';
+$password = 'pSchnGuDRryXTUlQkutxfYSBgLxnvLzE';
 
 try {
     // Forzamos la conexión por red TCP estándar ignorando el entorno
