@@ -1,26 +1,25 @@
 <?php
-// CONTROL DE VERSIÓN: CONFIGURACIÓN DE PUERTO Y SOCKET v12.58
+// CONTROL DE VERSIÓN: FORZADO MANUAL ABSOLUTO v12.62
 
-// Forzar la lectura de las variables de Railway o usar la IP de loopback (no localhost)
-$host     = getenv('MYSQLHOST') ?: '127.0.0.1';
-$port     = getenv('MYSQLPORT') ?: '3306';
-$dbname   = getenv('MYSQLDATABASE');
-$username = getenv('MYSQLUSER');
-$password = getenv('MYSQLPASSWORD');
+// REEMPLAZA LO QUE ESTÁ ENTRE LAS COMILLAS CON LOS DATOS REALES QUE COPIASTE:
+$host     = 'PEGAR_AQUI_TU_MYSQLHOST'; 
+$port     = 'PEGAR_AQUI_TU_MYSQLPORT'; 
+$dbname   = 'PEGAR_AQUI_TU_MYSQLDATABASE';
+$username = 'PEGAR_AQUI_TU_MYSQLUSER';
+$password = 'PEGAR_AQUI_TU_MYSQLPASSWORD';
 
 try {
-    // Es mandatorio incluir el parámetro host y port separados para TCP
+    // Forzamos la conexión por red TCP estándar ignorando el entorno
     $dsn = "mysql:host=$host;port=$port;dbname=$dbname;charset=utf8mb4";
     
-    // 1. Inicialización única y correcta de PDO
     $pdo = new PDO($dsn, $username, $password, [
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
     ]);
     
-    echo "Conexión exitosa a la base de datos de Railway.<br>";
+    echo "<h3>[ÉXITO] Conexión establecida correctamente con el motor MySQL.</h3>";
 
-    // 2. Script estructural nativo para el ecosistema del Kiosco
+    // Script estructural del Kiosco
     $sql = "
     CREATE TABLE IF NOT EXISTS `productos` (
       `codigo` VARCHAR(50) NOT NULL,
@@ -44,11 +43,9 @@ try {
     ON DUPLICATE KEY UPDATE `nombre`=`nombre`;
     ";
 
-    // 3. Ejecutar la inyección estructural de las tablas
     $pdo->exec($sql);
-    echo "¡Tablas 'productos' y 'clientes' creadas (o verificadas) correctamente con Consumidor Final inicializado!";
+    echo "<h2>¡TABLAS CREADAS CORRECTAMENTE!</h2><p>Las estructuras de 'productos' y 'clientes' ya impactaron en la base de datos.</p>";
 
 } catch (\PDOException $e) {
-    // En caso de falla, nos arrojará el detalle técnico exacto sin romper el servidor
-    die("Error crítico de conexión o ejecución: " . $e->getMessage());
+    die("<h2 style='color:red;'>Error crítico de conexión o ejecución:</h2> " . $e->getMessage());
 }
