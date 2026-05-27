@@ -2,7 +2,7 @@
 // CONTROL DE VERSIÓN: INSTALADOR KIOSCO v12.25
 
 // 1. Extraer las variables de entorno de MySQL que cargaste en Railway
-$host = getenv('mysql.railway.internal');
+$host = getenv('127.0.0.1');
 $port = getenv('3306');
 $db   = getenv('railway');
 $user = getenv('root');
