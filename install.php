@@ -2,11 +2,11 @@
 // CONTROL DE VERSIÓN: INSTALADOR KIOSCO v12.25
 
 // 1. Extraer las variables de entorno de MySQL que cargaste en Railway
-$host = getenv('MYSQLHOST');
-$port = getenv('MYSQLPORT');
-$db   = getenv('MYSQLDATABASE');
-$user = getenv('MYSQLUSER');
-$pass = getenv('MYSQLPASSWORD');
+$host = getenv('mysql.railway.internal');
+$port = getenv('3306');
+$db   = getenv('railway');
+$user = getenv('root');
+$pass = getenv('pSchnGuDRryXTUlQkutxfYSBgLxnvLzE');
 
 // 2. Construir el Data Source Name (DSN) adaptado para MySQL
 $dsn = "mysql:host=$host;port=$port;dbname=$db;charset=utf8mb4";
