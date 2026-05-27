@@ -1,28 +1,26 @@
 <?php
-// CONTROL DE VERSIÓN: INSTALADOR KIOSCO v12.25
+// CONTROL DE VERSIÓN: CONFIGURACIÓN DE PUERTO Y SOCKET v12.58
 
-// 1. Extraer las variables de entorno de MySQL que cargaste en Railway
-$host = getenv('127.0.0.1');
-$port = getenv('3306');
-$db   = getenv('railway');
-$user = getenv('root');
-$pass = getenv('pSchnGuDRryXTUlQkutxfYSBgLxnvLzE');
-
-// 2. Construir el Data Source Name (DSN) adaptado para MySQL
-$dsn = "mysql:host=$host;port=$port;dbname=$db;charset=utf8mb4";
+// Forzar la lectura de las variables de Railway o usar la IP de loopback (no localhost)
+$host     = getenv('MYSQLHOST') ?: '127.0.0.1';
+$port     = getenv('MYSQLPORT') ?: '3306';
+$dbname   = getenv('MYSQLDATABASE');
+$username = getenv('MYSQLUSER');
+$password = getenv('MYSQLPASSWORD');
 
 try {
-    // 3. Establecer la conexión segura mediante PDO
-    $options = [
+    // Es mandatorio incluir el parámetro host y port separados para TCP
+    $dsn = "mysql:host=$host;port=$port;dbname=$dbname;charset=utf8mb4";
+    
+    // 1. Inicialización única y correcta de PDO
+    $pdo = new PDO($dsn, $username, $password, [
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES   => false,
-    ];
+    ]);
     
-    $pdo = new PDO($dsn, $user, $pass, $options);
     echo "Conexión exitosa a la base de datos de Railway.<br>";
 
-    // 4. Script estructural nativo para el ecosistema del Kiosco
+    // 2. Script estructural nativo para el ecosistema del Kiosco
     $sql = "
     CREATE TABLE IF NOT EXISTS `productos` (
       `codigo` VARCHAR(50) NOT NULL,
@@ -46,7 +44,7 @@ try {
     ON DUPLICATE KEY UPDATE `nombre`=`nombre`;
     ";
 
-    // 5. Ejecutar la inyección estructural de las tablas
+    // 3. Ejecutar la inyección estructural de las tablas
     $pdo->exec($sql);
     echo "¡Tablas 'productos' y 'clientes' creadas (o verificadas) correctamente con Consumidor Final inicializado!";
 
