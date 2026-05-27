@@ -1,15 +1,14 @@
 <?php
-// CONTROL DE VERSIÓN: FORZADO MANUAL ABSOLUTO v12.62
+// CONTROL DE VERSIÓN: CONFIGURACIÓN CON CREDENCIALES FINALES v12.66
 
-// REEMPLAZA LO QUE ESTÁ ENTRE LAS COMILLAS CON LOS DATOS REALES QUE COPIASTE:
-$host     = 'mysql.railway.internal'; 
-$port     = '3306'; 
+$host     = 'zephyr.proxy.rlwy.net'; 
+$port     = '27672'; 
 $dbname   = 'railway';
 $username = 'root';
 $password = 'pSchnGuDRryXTUlQkutxfYSBgLxnvLzE';
 
 try {
-    // Forzamos la conexión por red TCP estándar ignorando el entorno
+    // Conexión forzada por red TCP externa (evita sockets internos)
     $dsn = "mysql:host=$host;port=$port;dbname=$dbname;charset=utf8mb4";
     
     $pdo = new PDO($dsn, $username, $password, [
