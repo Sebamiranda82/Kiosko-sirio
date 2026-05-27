@@ -1,5 +1,5 @@
 <?php
--- CONTROL DE VERSIÓN: INSTALADOR KIOSCO v12.25
+// CONTROL DE VERSIÓN: INSTALADOR KIOSCO v12.25
 
 // 1. Extraer las variables de entorno de MySQL que cargaste en Railway
 $host = getenv('MYSQLHOST');
