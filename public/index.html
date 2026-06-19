@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tienda EGlobal - Sistema Integral v12.7</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <!-- v12.4: Iconos SVG inline - sin dependencia de CDN lucide -->
+    <style>
+        .icon { display:inline-block; vertical-align:middle; flex-shrink:0; }
+    </style>
+    <script>
+    // SVG Icons inline - reemplaza lucide CDN
+    const ICONS = {
+        "store": `<svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7v3a2 2 0 0 1-2 2a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12a2 2 0 0 1-2-2V7"/></svg>`,
+        "calculator": `<svg class="icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>`,
+        "layers": `<svg class="icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></svg>`,
+        "users": `<svg class="icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+        "building-2": `<svg class="icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>`,
+        "scan-barcode": `<svg class="icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="8" x2="8" y1="7" y2="17"/><line x1="12" x2="12" y1="7" y2="17"/><line x1="17" x2="17" y1="7" y2="17"/></svg>`,
+        "camera": `<svg class="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>`,
+        "user": `<svg class="icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
+        "database": `<svg class="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>`,
+        "refresh-cw": `<svg class="icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>`,
+        "save": `<svg class="icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg>`,
+        "printer": `<svg class="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>`,
+        "x": `<svg class="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`
+    };
+
+    // Reemplaza todos los <i data-lucide="..."> con SVG inline
+    function renderIconos() {
+        document.querySelectorAll('i[data-lucide]').forEach(el => {
+            const name = el.getAttribute('data-lucide');
+            if (ICONS[name]) {
+                const tmp = document.createElement('span');
+                tmp.innerHTML = ICONS[name];
+                const svg = tmp.firstChild;
+                // Copiar clases de tamaño/color del <i> al SVG
+                el.classList.forEach(cls => svg.classList.add(cls));
+                el.replaceWith(svg);
+            }
+        });
+    }
+    document.addEventListener('DOMContentLoaded', renderIconos);
+    </script>
+    <style>
+        @media print {
+            body * { visibility: hidden; }
+            #area-impresion-ticket, #area-impresion-ticket * { visibility: visible; }
+            #area-impresion-ticket { 
+                position: absolute; 
+                left: 0; 
+                top: 0; 
+                width: 80mm; 
+                max-width: 80mm;
+                padding: 0;
+                margin: 0;
+                font-family: 'Courier New', Courier, monospace;
+                font-size: 12px;
+                color: #000;
+            }
+            @page { size: 80mm auto; margin: 0; }
+        }
+    </style>
+</head>
+<body class="bg-[#f8fafc] font-sans antialiased text-slate-800">
+
+    <div class="bg-blue-600 text-white text-center py-1.5 px-4 text-xs font-mono font-bold tracking-wide shadow-inner flex justify-center items-center space-x-2">
+        <span>🚀 COMPILACIÓN ACTIVA: SISTEMA INTEGRAL v12.7</span>
+        <span class="bg-white/20 px-2 py-0.5 rounded text-[10px]">FIX DEFINITIVO: URL RELATIVA - LOCAL Y NUBE SIN CONFIG</span>
+    </div>
+
+    <header class="bg-gradient-to-r from-blue-900 to-slate-900 text-white shadow-md border-b border-blue-800/40">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white/10 p-2.5 rounded-xl border border-white/10">
+                    <i data-lucide="store" class="w-6 h-6 text-blue-400"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-black tracking-tight" id="header-nombre-empresa">Tienda EGlobal</h1>
+                    <p class="text-[10px] text-slate-400 font-mono tracking-wider">Sistema de Gestión ERP • ANUAR PROYECTOS</p>
+                </div>
+            </div>
+            <span id="badge-entorno" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-bold font-mono">
+                ● SRI EN LÍNEA (PROD)
+            </span>
+        </div>
+    </header>
+
+    <nav class="max-w-7xl mx-auto px-6 mt-6">
+        <div class="flex p-1 bg-slate-200/80 rounded-xl space-x-1 max-w-3xl overflow-x-auto">
+            <button id="tab-caja" onclick="cambiarPestana('caja')" class="flex-1 bg-slate-900 text-white py-2.5 rounded-lg font-bold text-xs flex items-center justify-center space-x-2 shadow-sm transition-all min-w-[120px]">
+                <i data-lucide="calculator" class="w-4 h-4"></i>
+                <span>Caja de Ventas</span>
+            </button>
+            <button id="tab-catalogo" onclick="cambiarPestana('catalogo')" class="flex-1 text-slate-600 hover:text-slate-900 py-2.5 rounded-lg font-semibold text-xs flex items-center justify-center space-x-2 transition-all min-w-[120px]">
+                <i data-lucide="layers" class="w-4 h-4"></i>
+                <span>Catálogo de Precios</span>
+            </button>
+            <button id="tab-clientes" onclick="cambiarPestana('clientes')" class="flex-1 text-slate-600 hover:text-slate-900 py-2.5 rounded-lg font-semibold text-xs flex items-center justify-center space-x-2 transition-all min-w-[120px]">
+                <i data-lucide="users" class="w-4 h-4"></i>
+                <span>Clientes</span>
+            </button>
+            <button id="tab-empresa" onclick="cambiarPestana('empresa')" class="flex-1 text-slate-600 hover:text-slate-900 py-2.5 rounded-lg font-semibold text-xs flex items-center justify-center space-x-2 transition-all min-w-[120px]">
+                <i data-lucide="building-2" class="w-4 h-4"></i>
+                <span>Mi Empresa</span>
+            </button>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 py-6">
+
+        <div id="view-caja" class="space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div class="lg:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center space-x-2 mb-4">
+                            <i data-lucide="scan-barcode" class="w-4 h-4 text-blue-600"></i>
+                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Ingreso de Artículos</h3>
+                        </div>
+                        <input type="text" id="codigo-barras" onkeypress="detectarTeclado(event)" autofocus placeholder="Escanee código o digite (Ej: 1234 y Enter)..." 
+                               class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none text-center font-mono shadow-inner">
+                        
+                        <div class="border border-dashed border-slate-300 rounded-xl bg-slate-50 p-4 text-center text-xs text-slate-400 mt-4">
+                            <div id="reader" class="w-full mb-2"></div>
+                            <i data-lucide="camera" class="w-5 h-5 mx-auto mb-1 text-slate-300"></i>
+                            Lector de Cámara integrado disponible
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 min-h-[280px] flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
+                            <h3 class="font-bold text-xs text-slate-500 uppercase tracking-wider">Detalle del Comprobante</h3>
+                            <button onclick="limpiarTicket()" class="text-[11px] bg-slate-100 hover:bg-red-50 hover:text-red-600 px-2.5 py-1.5 rounded-lg font-medium transition-colors">
+                                 Limpiar Todo
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto max-h-[180px] overflow-y-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead>
+                                    <tr class="bg-slate-50 text-slate-400 uppercase border-b border-slate-200 font-mono text-[10px]">
+                                        <th class="py-2 px-3">Código</th>
+                                        <th class="py-2 px-3">Descripción</th>
+                                        <th class="py-2 px-3 text-center">Cant</th>
+                                        <th class="py-2 px-3 text-right">P. Unit</th>
+                                        <th class="py-2 px-3 text-right">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-items" class="divide-y divide-slate-100 font-medium"></tbody>
+                            </table>
+                        </div>
+                        <div id="ticket-vacio" class="py-12 text-center text-slate-400 text-xs">
+                            No hay artículos cargados en la proforma actual.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div class="lg:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="flex items-center space-x-2 mb-4 pb-2 border-b border-slate-100">
+                        <i data-lucide="user" class="text-blue-600 w-4 h-4"></i>
+                        <h3 class="font-bold text-xs text-slate-400 uppercase tracking-wider">Datos de Facturación del Cliente</h3>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-medium">
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-mono uppercase text-[10px]">RUC / Cédula / DNI + [Enter]</label>
+                            <input type="text" id="cliente-id" onkeydown="detectarCliente(event)" placeholder="Ingrese CI/RUC y presione Enter" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-mono font-bold transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-mono uppercase text-[10px]">Nombre / Razón Social</label>
+                            <input type="text" id="cliente-nombre" oninput="actualizarMemoriaCliente()" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-mono uppercase text-[10px]">Dirección</label>
+                            <input type="text" id="cliente-dir" oninput="actualizarMemoriaCliente()" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-mono uppercase text-[10px]">Correo Electrónico</label>
+                            <input type="email" id="cliente-email" oninput="actualizarMemoriaCliente()" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-mono transition-all">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-5 bg-slate-900 text-white p-6 rounded-2xl shadow-md flex flex-col justify-between space-y-4">
+                    <div class="space-y-2 font-mono text-xs">
+                        <div class="flex justify-between items-center text-slate-400">
+                            <span>SUBTOTAL NETO:</span>
+                            <span id="txt-subtotal" class="font-bold text-white text-sm">$0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center text-slate-400">
+                            <span>IVA LIQUIDADO (15%):</span>
+                            <span id="txt-iva" class="font-bold text-white text-sm">$0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center pt-2 border-t border-slate-800">
+                            <span class="text-emerald-400 font-bold">TOTAL A RECAUDAR:</span>
+                            <span id="txt-total" class="text-emerald-400 text-2xl font-black">$0.00</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="solicitarGuardadoVenta()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-2 rounded-xl transition-colors text-center text-[11px] uppercase tracking-wide">
+                            GUARDAR (F12)
+                        </button>
+                        <button onclick="alert('Enviando al SRI...')" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-2 rounded-xl transition-colors text-center text-[11px] uppercase tracking-wide">
+                            MANDAR SRI
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-catalogo" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex items-center space-x-2 pb-3 border-b border-slate-100 mb-4">
+                    <i data-lucide="database" class="text-blue-600 w-5 h-5"></i>
+                    <h3 class="font-bold text-sm text-slate-800">Consola de Actualización Masiva (ANUAR PROYECTOS)</h3>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                    <div class="md:col-span-4 space-y-1">
+                        <label class="block text-slate-400 font-mono uppercase text-[10px] font-bold">Alcance del Cambio</label>
+                        <select id="masivo-categoria" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:bg-white outline-none">
+                            <option value="TODOS">-- TODO EL CATÁLOGO --</option>
+                            <option value="Tecnología">Tecnología</option>
+                            <option value="Suministros">Suministros</option>
+                            <option value="General">General</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-4 space-y-1">
+                        <label class="block text-slate-400 font-mono uppercase text-[10px] font-bold">Porcentaje de Ajuste (Ej: 10 o -5)</label>
+                        <div class="relative flex items-center">
+                            <span class="absolute left-3 text-xs font-bold text-slate-400">%</span>
+                            <input type="number" id="masivo-porcentaje" placeholder="10" class="w-full pl-8 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-bold focus:bg-white outline-none">
+                        </div>
+                    </div>
+                    <div class="md:col-span-4 pt-4 md:pt-0">
+                        <button onclick="ejecutarAjusteMasivo()" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-3 px-4 rounded-xl transition-all uppercase tracking-wide flex items-center justify-center space-x-2 shadow-sm">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                            <span>Procesar Cambio Masivo</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                <div class="flex items-center space-x-2 pb-3 border-b border-slate-100">
+                    <i data-lucide="layers" class="text-blue-600 w-5 h-5"></i>
+                    <h3 class="font-bold text-sm text-slate-700">Catálogo Operativo de Artículos</h3>
+                </div>
+                <div class="overflow-x-auto rounded-xl border border-slate-100">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-500 uppercase border-b border-slate-200 font-mono text-[10px]">
+                                <th class="py-3 px-4">Código</th>
+                                <th class="py-3 px-4">Categoría</th>
+                                <th class="py-3 px-4">Descripción del Artículo</th>
+                                <th class="py-3 px-4 text-right">Precio Base</th>
+                                <th class="py-3 px-4 text-center">Impuesto (IVA)</th>
+                                <th class="py-3 px-4 text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-catalogo-items" class="divide-y divide-slate-100 font-medium text-slate-700"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-clientes" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+            <div class="flex items-center space-x-2 pb-3 border-b border-slate-100">
+                <i data-lucide="users" class="text-blue-600 w-5 h-5"></i>
+                <h3 class="font-bold text-sm text-slate-700">Directorio General de Clientes</h3>
+            </div>
+            <div class="overflow-x-auto rounded-xl border border-slate-100">
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-500 uppercase border-b border-slate-200 font-mono text-[10px]">
+                            <th class="py-3 px-4">RUC / Cédula</th>
+                            <th class="py-3 px-4">Razón Social / Nombre</th>
+                            <th class="py-3 px-4">Dirección Comercial</th>
+                            <th class="py-3 px-4">Correo Electrónico</th>
+                            <th class="py-3 px-4 text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-clientes-items" class="divide-y divide-slate-100 font-medium text-slate-700"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="view-empresa" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+            <div class="flex items-center space-x-2 pb-3 border-b border-slate-100">
+                <i data-lucide="building-2" class="text-blue-600 w-5 h-5"></i>
+                <h3 class="font-bold text-sm text-slate-700">Configuración de Datos Fiscales de la Empresa (Emisión SRI)</h3>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs font-medium">
+                <div>
+                    <label class="block text-slate-400 mb-1 font-mono uppercase text-[10px] font-bold">RUC de la Empresa (13 dígitos)</label>
+                    <input type="text" id="empresa-ruc" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-mono font-bold transition-all" placeholder="0999999999001">
+                </div>
+                <div>
+                    <label class="block text-slate-400 mb-1 font-mono uppercase text-[10px] font-bold">Razón Social</label>
+                    <input type="text" id="empresa-razon-social" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="ANUAR SISTEMAS S.A.">
+                </div>
+                <div>
+                    <label class="block text-slate-400 mb-1 font-mono uppercase text-[10px] font-bold">Nombre Comercial</label>
+                    <input type="text" id="empresa-nombre-comercial" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="TIENDA EGLOBAL">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-slate-400 mb-1 font-mono uppercase text-[10px] font-bold">Dirección Matriz</label>
+                    <input type="text" id="empresa-direccion" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Urdesa Central, Guayaquil, Ecuador">
+                </div>
+                <div>
+                    <label class="block text-slate-400 mb-1 font-mono uppercase text-[10px] font-bold">Obligado a Llevar Contabilidad</label>
+                    <select id="empresa-contabilidad" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none text-xs font-semibold">
+                        <option value="NO">NO</option>
+                        <option value="SI">SI</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-slate-400 mb-1 font-mono uppercase text-[10px] font-bold">Establecimiento (3 dígitos)</label>
+                    <input type="text" id="empresa-establecimiento" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-mono text-center" placeholder="001">
+                </div>
+                <div>
+                    <label class="block text-slate-400 mb-1 font-mono uppercase text-[10px] font-bold">Punto de Emisión (3 dígitos)</label>
+                    <input type="text" id="empresa-punto" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-mono text-center" placeholder="002">
+                </div>
+                <div>
+                    <label class="block text-slate-400 mb-1 font-mono uppercase text-[10px] font-bold">Régimen Impositivo / Leyendas Fiscales</label>
+                    <select id="empresa-regimen" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none text-xs font-semibold">
+                        <option value="CONTRIBUYENTE RÉGIMEN RIMPE">CONTRIBUYENTE RÉGIMEN RIMPE</option>
+                        <option value="CONTRIBUYENTE NEGOCIO POPULAR - RÉGIMEN RIMPE">CONTRIBUYENTE NEGOCIO POPULAR - RÉGIMEN RIMPE</option>
+                        <option value="RÉGIMEN GENERAL">RÉGIMEN GENERAL</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="pt-4 border-t border-slate-100 flex justify-end">
+                <button onclick="guardarDatosEmpresa()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2.5 px-6 rounded-xl transition-all shadow-md uppercase tracking-wider flex items-center space-x-2">
+                    <i data-lucide="save" class="w-4 h-4"></i>
+                    <span>Guardar Parámetros Fiscales</span>
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="modal-impresion" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 p-6 m-4 flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center pb-3 border-b border-slate-100">
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="printer" class="text-blue-600 w-5 h-5"></i>
+                    <h3 class="font-bold text-slate-900 text-sm">Venta Guardada Exitosamente</h3>
+                </div>
+                <button onclick="cerrarModalImpresion()" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <div class="py-3 text-center">
+                <p class="text-xs text-slate-600 font-semibold">¿Desea imprimir el ticket físico / guardar PDF para esta venta?</p>
+            </div>
+
+            <div class="bg-slate-100 p-4 rounded-xl overflow-y-auto flex-1 border border-slate-200 flex justify-center">
+                <div id="preview-ticket-modal" class="bg-white shadow-inner p-4 w-[72mm] font-mono text-[11px] text-black leading-tight border border-slate-300"></div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 pt-4 border-t border-slate-100 mt-4">
+                <button onclick="cerrarModalImpresion()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs transition-colors uppercase tracking-wider">
+                    No Imprimir
+                </button>
+                <button onclick="ejecutarImpresionNative()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center space-x-2 shadow-md uppercase tracking-wider">
+                    <i data-lucide="printer" class="w-4 h-4"></i>
+                    <span>Imprimir / PDF</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="area-impresion-ticket" class="hidden"></div>
+
+    <script>
+        // v12.4: iconos SVG inline, renderIconos() se llama desde DOMContentLoaded arriba
+
+        let datosEmpresa = {
+            ruc: "0999999999001",
+            razonSocial: "ANUAR SISTEMAS S.A.",
+            nombreComercial: "TIENDA EGLOBAL",
+            direccion: "Urdesa Central, Guayaquil, Ecuador",
+            obligadoContabilidad: "NO",
+            establecimiento: "001",
+            puntoEmision: "002",
+            regimen: "CONTRIBUYENTE RÉGIMEN RIMPE"
+        };
+
+        let baseClientes = {};
+        let baseProductos = {}; 
+        let carrito = [];
+        // v12.7: URL RELATIVA - funciona en local y nube sin configuración
+        const URL_API_CLEVER = "./procesar_factura.php";
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const badge = document.getElementById('badge-entorno');
+            if (badge) {
+                const esNube = window.location.hostname.includes('cleverapps') || window.location.hostname.includes('railway');
+                badge.textContent = esNube ? '● NUBE (PROD)' : '● LOCAL (TERMUX :8081)';
+                badge.className = esNube
+                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-bold font-mono'
+                    : 'bg-amber-500/20 text-amber-400 border border-amber-500/30 px-3 py-1 rounded-full text-xs font-bold font-mono';
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            document.getElementById('cliente-id').value = "9999999999999";
+            document.getElementById('cliente-nombre').value = "CONSUMIDOR FINAL";
+            document.getElementById('cliente-dir').value = "Av. Principal Ecuador";
+            document.getElementById('cliente-email').value = "consumidor@eglobal.com";
+
+            // FIX v12.3: Precargar consumidor final en baseClientes para que siempre aparezca en la tabla
+            baseClientes["9999999999999"] = {
+                nombre: "CONSUMIDOR FINAL",
+                direccion: "Av. Principal Ecuador",
+                email: "consumidor@eglobal.com"
+            };
+            
+            cargarFormularioEmpresaUI();
+            await cargarClientesDesdeBD();
+            await cargarProductosDesdeBD(); 
+            renderizarTablaFactura();
+        });
+
+        async function cargarClientesDesdeBD() {
+            try {
+                const response = await fetch(`${URL_API_CLEVER}?action=obtener_clientes`);
+                if (!response.ok) throw new Error(`Status ${response.status}`);
+                const res = await response.json();
+                if (res.success) {
+                    baseClientes = res.clientes;
+                    cargarClientesUI();
+                }
+            } catch (error) {
+                console.error("Error sincronizando clientes:", error);
+            }
+        }
+
+        async function cargarProductosDesdeBD() {
+            try {
+                const response = await fetch(`${URL_API_CLEVER}?action=obtener_productos`);
+                if (!response.ok) throw new Error(`Código de red: ${response.status}`);
+                
+                const res = await response.json();
+                if (res.success) {
+                    // Corrección de mapeo: Se recibe la estructura indexada directo de la base de datos
+                    baseProductos = res.productos;
+                    cargarCatalogoUI();
+                } else {
+                    if(res.error && res.error.includes("max_user_connections")) {
+                        alert("⚠️ Servidor ocupado. Reintentando sincronizar catálogo...");
+                        setTimeout(cargarProductosDesdeBD, 3000);
+                    }
+                }
+            } catch (error) {
+                console.error("Error de conexión de productos:", error);
+            }
+        }
+
+        function cambiarPestana(idVista) {
+            ['caja', 'catalogo', 'clientes', 'empresa'].forEach(v => {
+                document.getElementById(`view-${v}`).classList.toggle('hidden', v !== idVista);
+                document.getElementById(`tab-${v}`).className = v === idVista 
+                    ? "flex-1 bg-slate-900 text-white py-2.5 rounded-lg font-bold text-xs flex items-center justify-center space-x-2 shadow-sm transition-all min-w-[120px]"
+                    : "flex-1 text-slate-600 hover:text-slate-900 py-2.5 rounded-lg font-semibold text-xs flex items-center justify-center space-x-2 transition-all min-w-[120px]";
+            });
+            // FIX v12.3: Re-renderizar tablas al cambiar pestaña para garantizar datos visibles
+            if (idVista === 'catalogo') cargarCatalogoUI();
+            if (idVista === 'clientes') cargarClientesUI();
+        }
+
+        function cargarFormularioEmpresaUI() {
+            document.getElementById('empresa-ruc').value = datosEmpresa.ruc;
+            document.getElementById('empresa-razon-social').value = datosEmpresa.razonSocial;
+            document.getElementById('empresa-nombre-comercial').value = datosEmpresa.nombreComercial;
+            document.getElementById('empresa-direccion').value = datosEmpresa.direccion;
+            document.getElementById('empresa-contabilidad').value = datosEmpresa.obligadoContabilidad;
+            document.getElementById('empresa-establecimiento').value = datosEmpresa.establecimiento;
+            document.getElementById('empresa-punto').value = datosEmpresa.puntoEmision;
+            document.getElementById('empresa-regimen').value = datosEmpresa.regimen;
+            document.getElementById('header-nombre-empresa').innerText = datosEmpresa.nombreComercial;
+        }
+
+        function guardarDatosEmpresa() {
+            datosEmpresa.ruc = document.getElementById('empresa-ruc').value.trim();
+            datosEmpresa.razonSocial = document.getElementById('empresa-razon-social').value.trim();
+            datosEmpresa.nombreComercial = document.getElementById('empresa-nombre-comercial').value.trim();
+            datosEmpresa.direccion = document.getElementById('empresa-direccion').value.trim();
+            datosEmpresa.obligadoContabilidad = document.getElementById('empresa-contabilidad').value;
+            datosEmpresa.establecimiento = document.getElementById('empresa-establecimiento').value.trim();
+            datosEmpresa.puntoEmision = document.getElementById('empresa-punto').value.trim();
+            datosEmpresa.regimen = document.getElementById('empresa-regimen').value;
+            document.getElementById('header-nombre-empresa').innerText = datosEmpresa.nombreComercial;
+            alert("Parámetros fiscales actualizados correctamente.");
+        }
+
+        function detectarCliente(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                const rucCedula = event.target.value.trim();
+                if (!rucCedula) return;
+
+                const match = baseClientes[rucCedula];
+                const inputNombre = document.getElementById('cliente-nombre');
+                const inputDir = document.getElementById('cliente-dir');
+                const inputEmail = document.getElementById('cliente-email');
+
+                if (match) {
+                    inputNombre.value = match.nombre;
+                    inputDir.value = match.direccion;
+                    inputEmail.value = match.email;
+                } else {
+                    inputNombre.value = "";
+                    inputDir.value = "";
+                    inputEmail.value = "";
+                    baseClientes[rucCedula] = { nombre: "", direccion: "", email: "" };
+                    cargarClientesUI();
+                    inputNombre.focus();
+                }
+            }
+        }
+
+        function actualizarMemoriaCliente() {
+            const rucCedula = document.getElementById('cliente-id').value.trim();
+            if (!rucCedula) return;
+
+            baseClientes[rucCedula] = {
+                nombre: document.getElementById('cliente-nombre').value,
+                direccion: document.getElementById('cliente-dir').value,
+                email: document.getElementById('cliente-email').value
+            };
+            cargarClientesUI();
+        }
+
+        function ejecutarAjusteMasivo() {
+            const categoriaSeleccionada = document.getElementById('masivo-categoria').value;
+            const porcentajeInput = document.getElementById('masivo-porcentaje').value;
+            const factor = parseFloat(porcentajeInput);
+            
+            if (isNaN(factor) || factor === 0) {
+                alert("Por favor ingrese un porcentaje válido.");
+                return;
+            }
+
+            let modificados = 0;
+            const multiplicador = 1 + (factor / 100);
+
+            Object.keys(baseProductos).forEach(cod => {
+                const prod = baseProductos[cod];
+                if (categoriaSeleccionada === "TODOS" || prod.categoria === categoriaSeleccionada) {
+                    prod.precio = parseFloat((prod.precio * multiplicador).toFixed(4));
+                    modificados++;
+                }
+            });
+
+            cargarCatalogoUI();
+            renderizarTablaFactura(); 
+            document.getElementById('masivo-porcentaje').value = "";
+            alert(`Se actualizaron ${modificados} artículos localmente.`);
+        }
+
+        function detectarTeclado(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                const input = document.getElementById('codigo-barras');
+                const codigo = input.value.trim();
+                
+                if (codigo) {
+                    const conocido = baseProductos[codigo];
+                    const existente = carrito.find(item => item.codigo === codigo);
+
+                    if (existente) {
+                        existente.cantidad = parseInt(existente.cantidad) + 1;
+                    } else if (conocido) {
+                        carrito.push({
+                            codigo: codigo,
+                            detalle: conocido.detalle,
+                            precio: conocido.precio,
+                            iva: conocido.iva,
+                            cantidad: 1
+                        });
+                    } else {
+                        alert("Código no registrado en el catálogo sincronizado.");
+                    }
+                    input.value = "";
+                    renderizarTablaFactura();
+                }
+            }
+        }
+
+        function cargarCatalogoUI() {
+            const tbody = document.getElementById('tabla-catalogo-items');
+            tbody.innerHTML = "";
+
+            Object.keys(baseProductos).forEach(codigo => {
+                const prod = baseProductos[codigo];
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-mono font-bold">${codigo}</td>
+                    <td class="py-3 px-4 text-slate-500">${prod.categoria}</td>
+                    <td class="py-3 px-4">${prod.detalle}</td>
+                    <td class="py-3 px-4 text-right font-mono">$${prod.precio.toFixed(2)}</td>
+                    <td class="py-3 px-4 text-center font-mono">${prod.iva ? '15%' : '0%'}</td>
+                    <td class="py-3 px-4 text-center">
+                        <button type="button" onclick="confirmarEliminarProducto('${codigo}', '${prod.detalle}')" class="bg-red-600 hover:bg-red-700 text-white px-2.5 py-1 rounded-md text-[11px] font-bold transition-all shadow-sm">
+                            🗑️ Eliminar
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function cargarClientesUI() {
+            const tbody = document.getElementById('tabla-clientes-items');
+            tbody.innerHTML = "";
+
+            Object.keys(baseClientes).forEach(id => {
+                const cliente = baseClientes[id];
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-mono font-bold">${id}</td>
+                    <td class="py-3 px-4">${cliente.nombre || '<em class="text-slate-300">Sin nombre</em>'}</td>
+                    <td class="py-3 px-4 text-slate-500">${cliente.direccion || '-'}</td>
+                    <td class="py-3 px-4 text-slate-400 font-mono">${cliente.email || '-'}</td>
+                    <td class="py-3 px-4 text-center">
+                        <button type="button" onclick="confirmarEliminarCliente('${id}', '${cliente.nombre}')" class="bg-red-600 hover:bg-red-700 text-white px-2.5 py-1 rounded-md text-[11px] font-bold transition-all shadow-sm">
+                            🗑️ Eliminar
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderizarTablaFactura() {
+            const tbody = document.getElementById('tabla-items');
+            tbody.innerHTML = "";
+            let subtotal = 0;
+            let iva = 0;
+
+            if (carrito.length === 0) {
+                document.getElementById('ticket-vacio').style.display = 'block';
+            } else {
+                document.getElementById('ticket-vacio').style.display = 'none';
+            }
+
+            carrito.forEach((item) => {
+                const totalItem = item.precio * item.cantidad;
+                subtotal += totalItem;
+                if (item.iva) iva += totalItem * 0.15;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="py-2 px-3 font-mono">${item.codigo}</td>
+                    <td class="py-2 px-3">${item.detalle}</td>
+                    <td class="py-2 px-3 text-center">${item.cantidad}</td>
+                    <td class="py-2 px-3 text-right">$${item.precio.toFixed(2)}</td>
+                    <td class="py-2 px-3 text-right">$${totalItem.toFixed(2)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            const total = subtotal + iva;
+            document.getElementById('txt-subtotal').innerText = `$${subtotal.toFixed(2)}`;
+            document.getElementById('txt-iva').innerText = `$${iva.toFixed(2)}`;
+            document.getElementById('txt-total').innerText = `$${total.toFixed(2)}`;
+        }
+
+        function limpiarTicket() {
+            carrito = [];
+            renderizarTablaFactura();
+        }
+
+        async function solicitarGuardadoVenta() {
+            if (carrito.length === 0) {
+                alert("El carrito está vacío.");
+                return;
+            }
+
+            const payload = {
+                cliente: {
+                    id: document.getElementById('cliente-id').value,
+                    nombre: document.getElementById('cliente-nombre').value,
+                    direccion: document.getElementById('cliente-dir').value,
+                    email: document.getElementById('cliente-email').value
+                },
+                empresa: datosEmpresa,
+                productos: carrito
+            };
+
+            try {
+                const response = await fetch(URL_API_CLEVER, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error(`Status ${response.status}`);
+                
+                const res = await response.json();
+                if (res.status === 'success' || res.success) {
+                    alert("Venta guardada con éxito.");
+                    limpiarTicket();
+                } else {
+                    alert("Error al guardar: " + (res.mensaje || "Intente nuevamente."));
+                }
+            } catch (e) {
+                alert("Error de red al guardar.");
+            }
+        }
+
+        async function confirmarEliminarProducto(codigoProducto, detalleProducto) {
+            const confirmar = confirm(`¿Estás seguro de eliminar el producto "${detalleProducto}"?`);
+            if (!confirmar) return;
+
+            try {
+                const response = await fetch(`${URL_API_CLEVER}?action=eliminar_producto`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ codigo: codigoProducto })
+                });
+
+                const res = await response.json();
+                if (res && res.success) {
+                    delete baseProductos[codigoProducto];
+                    cargarCatalogoUI();
+                    alert(res.message);
+                } else {
+                    alert(`⚠️ Rechazado: ${res.error}`);
+                }
+            } catch (error) {
+                alert("Error de comunicación.");
+            }
+        }
+
+        async function confirmarEliminarCliente(idCliente, nombreCliente) {
+            if (idCliente === "9999999999999") {
+                alert("⚠️ No se puede eliminar al CONSUMIDOR FINAL por resguardo lógico del sistema.");
+                return;
+            }
+            
+            const confirmar = confirm(`¿Estás seguro de eliminar al cliente "${nombreCliente || idCliente}"?`);
+            if (!confirmar) return;
+
+            try {
+                const response = await fetch(`${URL_API_CLEVER}?action=eliminar_cliente`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id_cliente: idCliente })
+                });
+
+                const res = await response.json();
+                if (res && res.success) {
+                    delete baseClientes[idCliente];
+                    cargarClientesUI();
+                    alert(res.message);
+                } else {
+                    alert(`⚠️ Integridad Asegurada: ${res.error}`);
+                }
+            } catch (error) {
+                alert("Error de conexión.");
+            }
+        }
+
+        function cerrarModalImpresion() { document.getElementById('modal-impresion').classList.add('hidden'); }
+        function ejecutarImpresionNative() { window.print(); }
+    </script>
+</body>
+</html>
